@@ -1,20 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import AxolotlPet from '../components/AxolotlPet'; // The new component
+import Aquarium from '../components/visuals/Aquarium.tsx';
 ---
 
-<Layout title="My Axolotl Aquarium">
-  <main>
-    {/* We use client:load so the heart animations and buttons work immediately */}
-    <AxolotlPet client:load />
+<Layout title="Axolotl Aquarium">
+  <main style="margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;">
+    <Aquarium client:only="react" />
   </main>
 </Layout>
-
-<style>
-  main {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-  }
-</style>
