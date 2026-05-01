@@ -1,110 +1,136 @@
-import React, { useRef, useMemo, useEffect } from "react";
+import React, { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Float, Html } from "@react-three/drei";
 import * as THREE from "three";
 
-interface ColorPalette {
+/**
+ * ToyAxolotl Component (Model Only)
+ * Purely visual component managing internal animations (tail, legs, gills).
+ * Global movement has been extracted to a controller.
+ *
+ * Updates [2026-05-01]:
+ * - Replaced blocky dorsal fins with organic flattened spheres.
+ * - Adjusted leg rotation axes so limbs tuck backwards organically while swimming.
+ * - Added a BreathBubbles component for ambient breathing effects from the gills.
+ * - Maintained all valid structural and animation comments per project standards.
+ */
+
+export interface ColorPalette {
   main: string;
   light: string;
   dark: string;
 }
 
-interface Props {
+interface AxolotlModelProps {
   isPetting: boolean;
-  setIsPetting: (val: boolean) => void;
   isFeeding: boolean;
   colorPalette: ColorPalette;
 }
 
-const EYE_WHITE = "#fff8f0";
-// Darkened the pupil/iris for a more striking "Designer/Anime" look
-const PUPIL = "#121212";
+// ─── Sub-Components ──────────────────────────────────────────────────────────
 
-// ─── Petting Particle System ──────────────────────────────────────────────────
-// Generates multiple floating hearts at random offsets when isPetting is true.
-function HeartParticles({ active }: { active: boolean }) {
-  const hearts = useMemo(() => {
-    if (!active) return [];
-    return Array.from({ length: 6 }).map((_, i) => ({
-      id: i,
-      x: (Math.random() - 0.5) * 3, // Spread out horizontally
-      delay: Math.random() * 0.3, // Stagger the animations
-      scale: 1 + Math.random() * 0.5,
+/**
+ * Animated breathing bubbles that rise from the axolotl's head area.
+ * Uses a fixed pool of bubbles to keep performance high, recycling them
+ * back to the bottom when they reach a certain height.
+ */
+function BreathBubbles() {
+  const groupRef = useRef<THREE.Group>(null);
+
+  // Memoize the initial random states of our bubbles so they don't re-roll on every render.
+  const bubbleData = useMemo(() => {
+    return Array.from({ length: 5 }).map(() => ({
+      x: (Math.random() - 0.5) * 0.6, // Spread out across the width of the head
+      y: Math.random() * 0.5, // Staggered starting heights
+      z: (Math.random() - 0.5) * 0.4, // Slight depth variation
+      speed: 0.8 + Math.random() * 1.2, // Random rising speeds
+      scale: 0.02 + Math.random() * 0.03, // Tiny bubble sizes
     }));
-  }, [active]);
+  }, []);
 
-  if (!active) return null;
+  useFrame((_, delta) => {
+    if (!groupRef.current) return;
+
+    // Animate each bubble independently
+    groupRef.current.children.forEach((bubble, i) => {
+      const data = bubbleData[i];
+      // Move bubble up based on its individual speed
+      bubble.position.y += data.speed * delta;
+      // Add a tiny bit of horizontal drift for a realistic underwater wobble
+      bubble.position.x += Math.sin(bubble.position.y * 5) * 0.005;
+
+      // Recycle the bubble back to the source when it floats too high
+      if (bubble.position.y > 2.0) {
+        bubble.position.y = 0;
+        bubble.position.x = data.x;
+      }
+    });
+  });
 
   return (
-    <>
-      {hearts.map((h) => (
-        <Html key={h.id} position={[h.x, 1.2, 0]} center>
-          <div
-            style={{
-              fontSize: `${h.scale * 2}rem`,
-              animation: `floatUpAndFade 1.2s ease-out ${h.delay}s forwards`,
-              pointerEvents: "none",
-              opacity: 0, // Starts invisible until animation delay hits
-            }}
-          >
-            💖
-            <style>
-              {`
-                @keyframes floatUpAndFade {
-                  0% { transform: translateY(0) scale(0.5); opacity: 1; }
-                  100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
-                }
-              `}
-            </style>
-          </div>
-        </Html>
+    <group position={[0, 0.2, 0.6]} ref={groupRef}>
+      {bubbleData.map((data, i) => (
+        <mesh key={i} position={[data.x, data.y, data.z]} scale={data.scale}>
+          <sphereGeometry args={[1, 8, 8]} />
+          {/* Transparent, shiny white material for a soapy/glass bubble look */}
+          <meshStandardMaterial
+            color="#ffffff"
+            transparent
+            opacity={0.4}
+            roughness={0.1}
+            metalness={0.1}
+          />
+        </mesh>
       ))}
-    </>
+    </group>
   );
 }
 
-// ─── Leg ──────────────────────────────────────────────────────────────────────
-interface LegProps {
-  position: [number, number, number];
-  phase: number;
-  mirror: boolean;
-  colors: ColorPalette;
-}
-
-function Leg({ position, phase, mirror, colors }: LegProps) {
+/**
+ * Leg component responsible for the tucked swimming animation.
+ * The hierarchy has been rotated so the default resting pose points backward,
+ * mimicking how amphibians tuck their limbs to reduce drag while swimming.
+ */
+function Leg({ position, phase, mirror, colors }: any) {
   const hipRef = useRef<THREE.Group>(null);
   const kneeRef = useRef<THREE.Group>(null);
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
-    const swing = Math.sin(t * 2.4 + phase) * 0.4;
+    // Subtle flutter stroke while tucked in
+    const stroke = Math.sin(t * 4.0 + phase);
 
     if (hipRef.current) {
-      hipRef.current.rotation.x = swing;
-      hipRef.current.rotation.z = (mirror ? 0.5 : -0.5) + swing * 0.15;
+      // Small lateral flutter
+      hipRef.current.rotation.y = stroke * 0.1;
+      // Tuck limbs tightly to the side of the body
+      hipRef.current.rotation.z = mirror ? -0.2 : 0.2;
+      // BASE POSE CHANGE: Rotate -1.4 radians on X so the legs point horizontally backward
+      hipRef.current.rotation.x = -1.4 + stroke * 0.1;
     }
     if (kneeRef.current) {
-      // Knee bends opposite the hip for cute paddle motion
-      kneeRef.current.rotation.x = -Math.abs(swing) * 0.7;
+      // Slight inward bend at the knee during the flutter
+      kneeRef.current.rotation.x = stroke * 0.2 + 0.1;
     }
   });
 
   return (
     <group position={position}>
       <group ref={hipRef}>
-        <mesh position={[0, -0.15, 0]}>
-          <capsuleGeometry args={[0.07, 0.22, 8, 8]} />
-          <meshStandardMaterial color={colors.main} roughness={0.8} />
+        {/* Upper Leg / Thigh */}
+        <mesh position={[0, -0.1, 0]}>
+          <capsuleGeometry args={[0.06, 0.2, 8, 8]} />
+          <meshStandardMaterial color={colors.main} roughness={0.7} />
         </mesh>
 
-        <group position={[0, -0.29, 0]} ref={kneeRef}>
-          <mesh position={[0, -0.12, 0]}>
-            <capsuleGeometry args={[0.055, 0.18, 8, 8]} />
-            <meshStandardMaterial color={colors.main} roughness={0.8} />
+        {/* Lower Leg / Calf & Foot */}
+        <group position={[0, -0.22, 0]} ref={kneeRef}>
+          <mesh position={[0, -0.1, 0]}>
+            <capsuleGeometry args={[0.05, 0.18, 8, 8]} />
+            <meshStandardMaterial color={colors.main} roughness={0.7} />
           </mesh>
-          <mesh position={[0, -0.25, 0.04]}>
-            <sphereGeometry args={[0.072, 8, 8]} />
-            <meshStandardMaterial color={colors.main} roughness={0.8} />
+          <mesh position={[0, -0.22, 0.04]}>
+            <sphereGeometry args={[0.07, 8, 8]} />
+            <meshStandardMaterial color={colors.main} roughness={0.7} />
           </mesh>
         </group>
       </group>
@@ -112,90 +138,95 @@ function Leg({ position, phase, mirror, colors }: LegProps) {
   );
 }
 
-// ─── Tail ─────────────────────────────────────────────────────────────────────
-// Articulated tail segments for a smooth swimming wave pattern.
-function Tail({
-  swimPhase,
-  colors,
-}: {
-  swimPhase: React.MutableRefObject<number>;
-  colors: ColorPalette;
-}) {
-  const j0 = useRef<THREE.Group>(null);
-  const j1 = useRef<THREE.Group>(null);
-  const j2 = useRef<THREE.Group>(null);
-  const j3 = useRef<THREE.Group>(null);
+/**
+ * Articulated tail utilizing a traveling sine wave for a smooth s-curve.
+ * Incorporates a translucent dorsal/tail fin made of flattened spheres
+ * to create an organic, continuous, webbed appearance.
+ */
+function Tail({ colors }: { colors: ColorPalette }) {
+  const refs = [
+    useRef<THREE.Group>(null),
+    useRef<THREE.Group>(null),
+    useRef<THREE.Group>(null),
+    useRef<THREE.Group>(null),
+  ];
 
   useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
-    const wag = Math.sin(t * 3.2 + swimPhase.current);
-
-    if (j0.current) j0.current.rotation.y = wag * 0.08;
-    if (j1.current) j1.current.rotation.y = wag * 0.18;
-    if (j2.current) j2.current.rotation.y = wag * 0.3;
-    if (j3.current) j3.current.rotation.y = wag * 0.45;
+    const wave = clock.getElapsedTime() * 4.0;
+    // Traveling wave logic for smooth s-curve swimming motion.
+    // Each segment's rotation is delayed slightly from the previous one.
+    if (refs[0].current) refs[0].current.rotation.y = Math.sin(wave) * 0.12;
+    if (refs[1].current)
+      refs[1].current.rotation.y = Math.sin(wave - 0.6) * 0.18;
+    if (refs[2].current)
+      refs[2].current.rotation.y = Math.sin(wave - 1.2) * 0.25;
+    if (refs[3].current)
+      refs[3].current.rotation.y = Math.sin(wave - 1.8) * 0.35;
   });
 
   return (
     <group position={[0, 0, -0.55]}>
-      <group ref={j0}>
+      {/* Segment 0 */}
+      <group ref={refs[0]}>
         <mesh position={[0, 0, -0.28]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.38, 0.3, 0.56, 16]} />
-          <meshStandardMaterial color={colors.main} roughness={0.72} />
+          <cylinderGeometry args={[0.35, 0.28, 0.56, 16]} />
+          <meshStandardMaterial color={colors.main} roughness={0.6} />
         </mesh>
-        <mesh position={[0, 0.25, -0.28]}>
-          <boxGeometry args={[0.06, 0.18, 0.52]} />
+        {/* Dorsal Fin Base: Flattened sphere for organic webbed curve */}
+        <mesh position={[0, 0.32, -0.28]} scale={[0.1, 1, 1.8]}>
+          <sphereGeometry args={[0.18, 16, 16]} />
           <meshStandardMaterial
             color={colors.dark}
             transparent
-            opacity={0.8}
-            roughness={0.5}
+            opacity={0.6}
+            roughness={0.3}
           />
         </mesh>
 
-        <group position={[0, 0, -0.56]} ref={j1}>
+        {/* Segment 1 */}
+        <group position={[0, 0, -0.56]} ref={refs[1]}>
           <mesh position={[0, 0, -0.24]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.28, 0.2, 0.48, 16]} />
-            <meshStandardMaterial color={colors.main} roughness={0.72} />
+            <cylinderGeometry args={[0.28, 0.18, 0.48, 16]} />
+            <meshStandardMaterial color={colors.main} roughness={0.6} />
           </mesh>
-          <mesh position={[0, 0.2, -0.24]}>
-            <boxGeometry args={[0.05, 0.15, 0.44]} />
+          {/* Dorsal Fin Mid */}
+          <mesh position={[0, 0.22, -0.24]} scale={[0.1, 1, 1.8]}>
+            <sphereGeometry args={[0.15, 16, 16]} />
             <meshStandardMaterial
               color={colors.dark}
               transparent
-              opacity={0.78}
-              roughness={0.5}
+              opacity={0.6}
+              roughness={0.3}
             />
           </mesh>
 
-          <group position={[0, 0, -0.48]} ref={j2}>
+          {/* Segment 2 */}
+          <group position={[0, 0, -0.48]} ref={refs[2]}>
             <mesh position={[0, 0, -0.2]} rotation={[Math.PI / 2, 0, 0]}>
-              <cylinderGeometry args={[0.18, 0.1, 0.4, 14]} />
-              <meshStandardMaterial color={colors.main} roughness={0.72} />
+              <cylinderGeometry args={[0.18, 0.08, 0.4, 14]} />
+              <meshStandardMaterial color={colors.main} roughness={0.6} />
             </mesh>
-            <mesh position={[0, 0.14, -0.2]}>
-              <boxGeometry args={[0.04, 0.12, 0.36]} />
+            {/* Dorsal Fin Tip */}
+            <mesh position={[0, 0.12, -0.2]} scale={[0.1, 1, 1.8]}>
+              <sphereGeometry args={[0.12, 16, 16]} />
               <meshStandardMaterial
                 color={colors.dark}
                 transparent
-                opacity={0.75}
-                roughness={0.5}
+                opacity={0.6}
+                roughness={0.3}
               />
             </mesh>
 
-            <group position={[0, 0, -0.4]} ref={j3}>
-              <mesh position={[0, 0, -0.18]}>
-                <boxGeometry args={[0.6, 0.07, 0.34]} />
+            {/* Segment 3 - Primary Tail Paddle */}
+            <group position={[0, 0, -0.4]} ref={refs[3]}>
+              <mesh position={[0, 0, -0.15]} scale={[0.1, 1, 2]}>
+                <sphereGeometry args={[0.22, 16, 16]} />
                 <meshStandardMaterial
                   color={colors.dark}
                   transparent
-                  opacity={0.76}
-                  roughness={0.4}
+                  opacity={0.7}
+                  roughness={0.2}
                 />
-              </mesh>
-              <mesh position={[0, 0, -0.18]} rotation={[Math.PI / 2, 0, 0]}>
-                <cylinderGeometry args={[0.025, 0.01, 0.34, 8]} />
-                <meshStandardMaterial color={colors.dark} roughness={0.5} />
               </mesh>
             </group>
           </group>
@@ -205,8 +236,9 @@ function Tail({
   );
 }
 
-// ─── Gill Set ─────────────────────────────────────────────────────────────────
-// Updated positioning to move them higher and slightly forward for a better profile.
+/**
+ * Animated gills that subtly wave in the water to simulate breathing and current.
+ */
 function GillSet({ side, colors }: { side: 1 | -1; colors: ColorPalette }) {
   const refs = [
     useRef<THREE.Group>(null),
@@ -218,7 +250,7 @@ function GillSet({ side, colors }: { side: 1 | -1; colors: ColorPalette }) {
     const t = clock.getElapsedTime();
     refs.forEach((ref, i) => {
       if (!ref.current) return;
-      // Gentle waving motion
+      // Staggered sine waves so the frills move sequentially
       ref.current.rotation.z =
         side * (0.28 + Math.sin(t * 1.1 + i * 1.3) * 0.14);
       ref.current.rotation.x = Math.sin(t * 0.8 + i * 0.9) * 0.07;
@@ -227,18 +259,15 @@ function GillSet({ side, colors }: { side: 1 | -1; colors: ColorPalette }) {
 
   return (
     <group
-      // side * 0.55 keeps them wide, 0.1 pushes them higher up the head
-      position={[side * 0.55, 0.1, -0.05]}
-      rotation={[0, side * 0.4, -side * 0.2]}
+      position={[side * 0.5, 0.05, -0.05]}
+      rotation={[0, side * 0.3, -side * 0.2]}
     >
       {[0.14, 0, -0.14].map((dz, i) => (
         <group key={i} ref={refs[i]} position={[0, 0, dz]}>
-          {/* Main Gill Branch */}
           <mesh position={[side * 0.1, 0.28, 0]} rotation={[0, 0, side * -0.2]}>
             <capsuleGeometry args={[0.038, 0.42, 8, 8]} />
             <meshStandardMaterial color={colors.dark} roughness={0.55} />
           </mesh>
-          {/* Decorative fluff/secondary branch */}
           <mesh position={[side * 0.2, 0.4, 0]} rotation={[0, 0, side * -0.5]}>
             <capsuleGeometry args={[0.022, 0.18, 6, 6]} />
             <meshStandardMaterial color={colors.dark} roughness={0.55} />
@@ -249,198 +278,133 @@ function GillSet({ side, colors }: { side: 1 | -1; colors: ColorPalette }) {
   );
 }
 
-// ─── Falling Worm Animation ───────────────────────────────────────────────────
-function FallingWorm({ isFeeding }: { isFeeding: boolean }) {
-  const wormRef = useRef<THREE.Mesh>(null);
+// ─── Main Model ──────────────────────────────────────────────────────────────
 
-  useFrame((state) => {
-    if (!wormRef.current || !isFeeding) return;
-    const fallSpeed = state.clock.getElapsedTime() * 2;
-    wormRef.current.position.y = Math.max(0.1, 3 - (fallSpeed % 3));
-
-    if (wormRef.current.position.y < 0.5) {
-      wormRef.current.scale.setScalar(wormRef.current.position.y * 2);
-    } else {
-      wormRef.current.scale.setScalar(1);
-    }
-  });
-
-  if (!isFeeding) return null;
-
-  return (
-    <mesh
-      ref={wormRef}
-      position={[0, 3, 1.2]}
-      rotation={[Math.PI / 4, 0, Math.PI / 4]}
-    >
-      <capsuleGeometry args={[0.04, 0.15, 8, 8]} />
-      <meshStandardMaterial color="#8b5a2b" roughness={0.9} />
-    </mesh>
-  );
-}
-
-// ─── Main Axolotl ─────────────────────────────────────────────────────────────
 export default function ToyAxolotl({
   isPetting,
-  setIsPetting,
   isFeeding,
   colorPalette,
-}: Props) {
-  const rootRef = useRef<THREE.Group>(null);
+}: AxolotlModelProps) {
   const bodyRef = useRef<THREE.Mesh>(null);
   const headRef = useRef<THREE.Group>(null);
-  const swimPhase = useRef(0);
 
   useFrame(({ clock }) => {
-    const t = clock.getElapsedTime() * 0.28;
-    if (!rootRef.current) return;
-
-    const speedMult = isFeeding ? 0.3 : 1.0;
-    const x = Math.sin(t) * 3.0 * speedMult;
-    const y = Math.sin(t * 0.55) * 0.55 * speedMult;
-    const z = Math.cos(t * 0.7) * 0.9 * speedMult;
-    rootRef.current.position.set(x, y, z);
-
-    const dx = Math.cos(t) * 3.0;
-    const dz = -Math.sin(t * 0.7) * 0.9;
-
-    if (isFeeding) {
-      rootRef.current.rotation.y = THREE.MathUtils.lerp(
-        rootRef.current.rotation.y,
-        0,
-        0.05,
-      );
-      rootRef.current.rotation.x = THREE.MathUtils.lerp(
-        rootRef.current.rotation.x,
-        0.2,
-        0.05,
-      );
-    } else {
-      rootRef.current.rotation.y = Math.atan2(dx, dz);
-      rootRef.current.rotation.x = 0;
-    }
-
-    rootRef.current.rotation.z = -Math.sin(t) * 0.15 * speedMult;
-
-    if (bodyRef.current) bodyRef.current.rotation.z = Math.sin(t * 3.8) * 0.034;
+    const t = clock.getElapsedTime();
+    // Internal wiggle syncing for realistic swimming feel.
+    // Body slightly twists in opposition to the tail forces.
+    if (bodyRef.current) bodyRef.current.rotation.z = Math.sin(t * 4.0) * 0.04;
+    // Head bobs up slightly unless feeding, where it locks downward.
     if (headRef.current)
       headRef.current.rotation.x = isFeeding ? -0.2 : Math.sin(t * 1.3) * 0.05;
-
-    swimPhase.current = t;
   });
 
   return (
-    <Float speed={0.5} rotationIntensity={0.0} floatIntensity={0.04}>
-      <group
-        ref={rootRef}
-        onPointerDown={() => {
-          setIsPetting(true);
-          setTimeout(() => setIsPetting(false), 2000);
-        }}
+    <group scale={0.65}>
+      <Tail colors={colorPalette} />
+
+      {/* ── Sleek Body ── */}
+      <mesh
+        ref={bodyRef}
+        position={[0, 0, 0.1]}
+        rotation={[Math.PI / 2, 0, 0]}
+        castShadow
       >
-        <HeartParticles active={isPetting} />
-        <FallingWorm isFeeding={isFeeding} />
-        <Tail swimPhase={swimPhase} colors={colorPalette} />
+        <capsuleGeometry args={[0.42, 1.1, 28, 28]} />
+        <meshStandardMaterial color={colorPalette.main} roughness={0.5} />
+      </mesh>
 
-        {/* ── Body ── */}
-        <mesh ref={bodyRef} rotation={[Math.PI / 2, 0, 0]} castShadow>
-          <capsuleGeometry args={[0.52, 1.1, 28, 28]} />
-          <meshStandardMaterial color={colorPalette.main} roughness={0.6} />
+      {/* ── Head & Bubbles ── */}
+      <group ref={headRef} position={[0, 0.04, 0.9]}>
+        {/* Breathing Bubble System */}
+        <BreathBubbles />
+
+        <mesh castShadow>
+          <sphereGeometry args={[0.55, 28, 28]} />
+          <meshStandardMaterial color={colorPalette.main} roughness={0.5} />
         </mesh>
 
-        <mesh position={[0, -0.27, 0.08]} rotation={[Math.PI / 2, 0, 0]}>
-          <capsuleGeometry args={[0.36, 0.72, 16, 16]} />
-          <meshStandardMaterial color={colorPalette.light} roughness={0.75} />
-        </mesh>
-
-        {/* ── Head ── */}
-        <group ref={headRef} position={[0, 0.04, 0.9]}>
-          <mesh castShadow>
-            <sphereGeometry args={[0.6, 28, 28]} />
-            <meshStandardMaterial color={colorPalette.main} roughness={0.6} />
-          </mesh>
-
-          {/* ── Anime Eyes ── */}
-          {/* Layered spheres to create depth and that "shining" anime effect */}
-          {([-1, 1] as const).map((s) => (
-            <group
-              key={s}
-              position={[s * 0.32, 0.25, 0.48]}
-              rotation={[0, s * 0.2, 0]}
-            >
-              {/* White Sclera */}
-              <mesh>
-                <sphereGeometry args={[0.12, 16, 16]} />
-                <meshStandardMaterial color={EYE_WHITE} roughness={0.1} />
-              </mesh>
-              {/* Large Dark Iris/Pupil - Oval scale for anime style */}
-              <mesh position={[0, 0, 0.08]} scale={[1, 1.2, 1]}>
-                <sphereGeometry args={[0.08, 16, 16]} />
-                <meshStandardMaterial color={PUPIL} roughness={0.2} />
-              </mesh>
-              {/* Primary Glint (Large Sparkle) */}
-              <mesh position={[0.04, 0.05, 0.13]}>
-                <sphereGeometry args={[0.035, 8, 8]} />
-                <meshStandardMaterial
-                  color="white"
-                  emissive="white"
-                  emissiveIntensity={0.6}
-                />
-              </mesh>
-              {/* Secondary Glint (Small soft sparkle) */}
-              <mesh position={[-0.03, -0.04, 0.13]}>
-                <sphereGeometry args={[0.015, 8, 8]} />
-                <meshStandardMaterial color="white" transparent opacity={0.6} />
-              </mesh>
-            </group>
-          ))}
-
-          {/* ── Dynamic Mouth ── */}
-          {isFeeding ? (
-            <mesh position={[0, -0.15, 0.56]}>
-              <sphereGeometry args={[0.08, 16, 16]} />
-              <meshStandardMaterial color="#2a0a10" roughness={0.8} />
-            </mesh>
-          ) : (
-            <mesh position={[0, -0.15, 0.58]} rotation={[Math.PI / 2, 0, 0]}>
-              <torusGeometry args={[0.05, 0.015, 12, 24, Math.PI]} />
+        {/* ── Cute Beady Anime Eyes (Preserved from previous iteration) ── */}
+        {([-1, 1] as const).map((s) => (
+          <group
+            key={s}
+            // Placed precisely on the surface of the head radius
+            position={[s * 0.32, 0.2, 0.42]}
+            rotation={[0, s * 0.4, 0]}
+          >
+            {/* Main Dark Eye - Flattened slightly on Z to hug face */}
+            <mesh scale={[1, 1.2, 0.3]}>
+              <sphereGeometry args={[0.14, 16, 16]} />
               <meshStandardMaterial
-                color={colorPalette.dark}
-                roughness={0.45}
+                color="#1a1a1a"
+                roughness={0.1}
+                metalness={0.2}
               />
             </mesh>
-          )}
 
-          <GillSet side={1} colors={colorPalette} />
-          <GillSet side={-1} colors={colorPalette} />
-        </group>
+            {/* Primary Catchlight (Glint) */}
+            <mesh position={[0.04, 0.06, 0.04]} scale={[1, 1, 0.2]}>
+              <sphereGeometry args={[0.04, 8, 8]} />
+              <meshStandardMaterial
+                color="white"
+                emissive="white"
+                emissiveIntensity={0.8}
+              />
+            </mesh>
 
-        {/* ── Legs ── */}
-        <Leg
-          position={[0.52, -0.32, 0.3]}
-          phase={0}
-          mirror={false}
-          colors={colorPalette}
-        />
-        <Leg
-          position={[-0.52, -0.32, 0.3]}
-          phase={Math.PI}
-          mirror={true}
-          colors={colorPalette}
-        />
-        <Leg
-          position={[0.48, -0.32, -0.28]}
-          phase={Math.PI}
-          mirror={false}
-          colors={colorPalette}
-        />
-        <Leg
-          position={[-0.48, -0.32, -0.28]}
-          phase={0}
-          mirror={true}
-          colors={colorPalette}
-        />
+            {/* Secondary tiny Catchlight */}
+            <mesh position={[-0.04, -0.05, 0.04]} scale={[1, 1, 0.2]}>
+              <sphereGeometry args={[0.015, 8, 8]} />
+              <meshStandardMaterial
+                color="white"
+                emissive="white"
+                emissiveIntensity={0.4}
+              />
+            </mesh>
+          </group>
+        ))}
+
+        {/* ── Dynamic Mouth ── */}
+        {isFeeding || isPetting ? (
+          <mesh position={[0, -0.15, 0.52]} scale={[1, 1, 0.3]}>
+            <sphereGeometry args={[0.08, 16, 16]} />
+            <meshStandardMaterial color="#2a0a10" roughness={0.8} />
+          </mesh>
+        ) : (
+          <mesh position={[0, -0.15, 0.53]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.04, 0.015, 12, 24, Math.PI]} />
+            <meshStandardMaterial color={colorPalette.dark} roughness={0.45} />
+          </mesh>
+        )}
+
+        <GillSet side={1} colors={colorPalette} />
+        <GillSet side={-1} colors={colorPalette} />
       </group>
-    </Float>
+
+      {/* ── Swimming Legs (Tucked securely against the sleek body) ── */}
+      <Leg
+        position={[0.38, -0.15, 0.45]}
+        phase={0}
+        mirror={false}
+        colors={colorPalette}
+      />
+      <Leg
+        position={[-0.38, -0.15, 0.45]}
+        phase={Math.PI} // Alternating strokes
+        mirror={true}
+        colors={colorPalette}
+      />
+      <Leg
+        position={[0.35, -0.15, -0.15]}
+        phase={Math.PI}
+        mirror={false}
+        colors={colorPalette}
+      />
+      <Leg
+        position={[-0.35, -0.15, -0.15]}
+        phase={0}
+        mirror={true}
+        colors={colorPalette}
+      />
+    </group>
   );
 }

@@ -197,7 +197,6 @@ export default function AxolotlPet() {
         {/* We pass the active color palette and states down to the model */}
         <ToyAxolotl
           isPetting={isPetting}
-          setIsPetting={setIsPetting}
           isFeeding={isFeeding}
           colorPalette={currentColor}
         />
