@@ -3,57 +3,62 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 /**
- * Independent Food Component: Bloodworm
- * Features: Procedural tube geometry for realistic wriggling.
- * Logic is self-contained and moves independently of the pet. [2026-02-27]
+ * Worm Component (Food)
+ * Refined [2026-05-02]
+ * - Lowered spawn height to ensure immediate visibility.
+ * - Adjusted descent for better synchronization with Axolotl movement.
  */
-export default function Worm({ active }: { active: boolean }) {
+
+interface WormProps {
+  spawnX?: number;
+}
+
+export default function Worm({ spawnX = 0 }: WormProps) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const WORM_BROWN = "#5c4033";
 
-  // Create a base curve for the worm body
-  const curve = useMemo(() => {
-    const points = [];
-    for (let i = 0; i < 5; i++) {
-      points.push(new THREE.Vector3(0, i * 0.1, 0));
-    }
-    return new THREE.CatmullRomCurve3(points);
-  }, []);
+  // Curved points to keep the "organic" shape
+  const points = useMemo(
+    () => [
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(0.04, -0.05, 0.01),
+      new THREE.Vector3(-0.04, -0.1, -0.01),
+      new THREE.Vector3(0.02, -0.15, 0.01),
+      new THREE.Vector3(0, -0.2, 0),
+    ],
+    [],
+  );
 
-  useFrame((state) => {
+  const curve = useMemo(() => new THREE.CatmullRomCurve3(points), [points]);
+  const randomOffset = useMemo(() => (Math.random() - 0.5) * 1.5, []);
+
+  useFrame((state, delta) => {
     if (!meshRef.current) return;
 
-    if (active) {
-      const t = state.clock.getElapsedTime();
+    // Increased speed slightly (1.2) so it doesn't take forever to fall
+    meshRef.current.position.y -= delta * 1.2;
 
-      // 1. Falling Physics
-      if (meshRef.current.position.y > 0.1) {
-        meshRef.current.position.y -= 0.035;
-        meshRef.current.scale.setScalar(1);
-      } else {
-        // "Eaten" or settled
-        meshRef.current.scale.setScalar(0);
-      }
+    const time = state.clock.elapsedTime;
+    // Faster wiggle for a more "alive" feel
+    meshRef.current.rotation.z = Math.sin(time * 10) * 0.4;
+    meshRef.current.rotation.x = Math.cos(time * 7) * 0.2;
 
-      // 2. Realistic Wriggle
-      // We tilt and rotate the worm mid-air to look alive
-      meshRef.current.rotation.x = Math.sin(t * 8) * 0.2;
-      meshRef.current.rotation.z = Math.cos(t * 10) * 0.3;
-      meshRef.current.position.x = Math.sin(t * 5) * 0.05; // Slight drift
-    } else {
-      meshRef.current.position.y = 5; // Reset off-screen
-      meshRef.current.scale.setScalar(0);
-    }
+    // Subtle drift
+    meshRef.current.position.x =
+      spawnX + randomOffset + Math.sin(time * 2) * 0.05;
   });
 
+  // Inside Worm.tsx
+
   return (
-    <mesh ref={meshRef} position={[0, 5, 1.1]} castShadow>
-      {/* TubeGeometry makes it look like a real soft body worm */}
-      <tubeGeometry args={[curve, 20, 0.03, 8, false]} />
+    // Change Z from 0 to 2.0 to match the Axolotl's feeding position
+    <mesh ref={meshRef} position={[spawnX + randomOffset, 2.5, 2.0]}>
+      <tubeGeometry args={[curve, 20, 0.015, 8, false]} />
       <meshStandardMaterial
-        color="#b30000"
-        emissive="#4a0000"
-        roughness={0.3}
-        metalness={0.2}
+        color={"#5c4033"} // Brown
+        roughness={0.9}
+        emissive={"#5c4033"}
+        emissiveIntensity={0.05}
       />
     </mesh>
   );
