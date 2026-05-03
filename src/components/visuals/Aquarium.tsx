@@ -1,39 +1,28 @@
 import React, { useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ContactShadows, Environment } from "@react-three/drei";
-import AxolotlController from "./AxolotlController.tsx";
-import Substrate, { SUBSTRATE_TYPES } from "./Substrate.tsx";
-import { BubbleStream } from "./EnvironmentEffects.tsx";
-import Worm from "./Food.tsx";
-import Foliage from "./CreateFoliage.tsx";
-import Lighting, { type LightMode } from "./Lighting.tsx";
-import { AXOLOTL_COLORS } from "./AxolotlStyles.ts";
+import { useAquariumLogic } from "../../hooks/useAquariumLogic";
+import AxolotlController from "./Axolotl/AxolotlController.tsx";
+import Substrate from "./Environment/Substrate.tsx";
+import { BubbleStream } from "./Environment/EnvironmentEffects.tsx";
+import Worm from "../Food/Worm.tsx";
+import Foliage, { type FoliageType } from "./Environment/CreateFoliage.tsx";
+import Lighting from "./Environment/Lighting.tsx";
+import type { AxolotlMood, AxolotlTrick } from "../../types/aquarium.ts";
 
 export default function Aquarium() {
-  const [substrate] = useState<keyof typeof SUBSTRATE_TYPES>("gravel");
-  const [lightMode, setLightMode] = useState<LightMode>("day");
-  // We now use an array to track multiple active worms
-  const [worms, setWorms] = useState<{ id: number }[]>([]);
-  const [showGrass, setShowGrass] = useState(true);
+  const logic = useAquariumLogic();
+  const [trick, setTrick] = useState<AxolotlTrick>("none");
   const [isPetting, setIsPetting] = useState(false);
-  const [mood, setMood] = useState<"chill" | "excited">("chill");
-  const [trick, setTrick] = useState<"none" | "barrelRoll">("none");
-  const [colorIndex, setColorIndex] = useState(0);
+  const [foliageStyle, setFoliageStyle] = useState<FoliageType>("seagrass");
 
-  const currentColor = AXOLOTL_COLORS[colorIndex];
+  // Initial state is blank so she can start fresh, or set a default pet name
+  const [petName, setPetName] = useState("");
 
-  const handleFeed = () => {
-    const newId = Date.now();
-    setWorms((prev) => [...prev, { id: newId }]);
-    setMood("excited");
-
-    // Reduce this cleanup timer.
-    // If the worm drops from 2.5 at speed 1.2, it hits the center in ~2 seconds.
-    setTimeout(() => {
-      setWorms((prev) => prev.filter((w) => w.id !== newId));
-    }, 2100); // Worm vanishes right after passing the "mouth" zone
-
-    setTimeout(() => setMood("chill"), 4000);
+  const cycleFoliage = () => {
+    const types: FoliageType[] = ["seagrass", "kelp", "vines"];
+    const nextIndex = (types.indexOf(foliageStyle) + 1) % types.length;
+    setFoliageStyle(types[nextIndex]);
   };
 
   return (
@@ -42,90 +31,115 @@ export default function Aquarium() {
         width: "100vw",
         height: "100vh",
         position: "relative",
-        background: lightMode === "day" ? "#a2d2ff" : "#023e8a",
+        background: logic.lightMode === "day" ? "#a2d2ff" : "#023e8a",
         transition: "background 1s ease",
+        overflow: "hidden",
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          bottom: "30px",
-          right: "30px",
-          zIndex: 10,
-        }}
-      >
-        <section style={glassCardStyle}>
-          <div style={groupStyle}>
-            <small style={labelStyle}>GENETICS & ENVIRONMENT</small>
-            <div style={rowStyle}>
-              <button
-                onClick={() =>
-                  setColorIndex((c) => (c + 1) % AXOLOTL_COLORS.length)
-                }
-                style={btnStyle}
-              >
-                🎨 {currentColor.name}
-              </button>
-              <button
-                onClick={() =>
-                  setLightMode((l) => (l === "day" ? "night" : "day"))
-                }
-                style={btnStyle}
-              >
-                {lightMode === "day" ? "☀️ DAY" : "🌙 NIGHT"}
-              </button>
-              <button onClick={() => setShowGrass(!showGrass)} style={btnStyle}>
-                {showGrass ? "🌿 ON" : "🌿 OFF"}
-              </button>
-            </div>
+      {/* Top Bar UI Navigation */}
+      <div style={headerContainerStyle}>
+        <div style={titleWrapperStyle}>
+          <input
+            type="text"
+            value={petName}
+            onChange={(e) => setPetName(e.target.value)}
+            placeholder="Name your Axolotl..."
+            style={nameInputStyle}
+            spellCheck={false}
+          />
+        </div>
+
+        <nav style={topBarStyle}>
+          <div style={navGroupStyle}>
+            <button onClick={logic.cycleColor} style={navBtnStyle}>
+              🎨 {logic.currentColor.name}
+            </button>
+            <button
+              onClick={() =>
+                logic.setLightMode((l) => (l === "day" ? "night" : "day"))
+              }
+              style={navBtnStyle}
+            >
+              {logic.lightMode === "day" ? "☀️ DAY" : "🌙 NIGHT"}
+            </button>
+            <button onClick={logic.cycleSubstrate} style={navBtnStyle}>
+              🪨 {logic.substrate.toUpperCase()}
+            </button>
+            <button
+              onClick={cycleFoliage}
+              style={navBtnStyle}
+              disabled={!logic.showGrass}
+            >
+              {logic.showGrass ? `🌿 ${foliageStyle.toUpperCase()}` : "🌿 OFF"}
+            </button>
+            <button
+              onClick={() => logic.setShowGrass(!logic.showGrass)}
+              style={{ ...navBtnStyle, opacity: logic.showGrass ? 1 : 0.5 }}
+            >
+              {logic.showGrass ? "HIDE" : "SHOW"}
+            </button>
           </div>
 
-          <div style={groupStyle}>
-            <small style={labelStyle}>BEHAVIOR</small>
-            <div style={rowStyle}>
-              <button
-                onClick={() =>
-                  setMood((m) => (m === "chill" ? "excited" : "chill"))
-                }
-                style={btnStyle}
-              >
-                {mood === "excited" ? "⚡ FAST" : "🌊 SLOW"}
-              </button>
-              <button
-                onClick={() => setTrick("barrelRoll")}
-                disabled={trick !== "none"}
-                style={btnStyle}
-              >
-                {trick !== "none" ? "🌀..." : "✨ DO TRICK"}
-              </button>
-            </div>
+          <div style={dividerStyle} />
+
+          <div style={navGroupStyle}>
+            <button
+              onClick={() =>
+                logic.setMood((m: AxolotlMood) =>
+                  m === "chill" ? "excited" : "chill",
+                )
+              }
+              style={navBtnStyle}
+            >
+              {logic.mood === "excited" ? "⚡ FAST" : "🌊 SLOW"}
+            </button>
+            <button
+              onClick={() => setTrick("barrelRoll")}
+              disabled={trick !== "none"}
+              style={navBtnStyle}
+            >
+              🌀 ROLL
+            </button>
+            <button
+              onClick={() => setTrick("backflip")}
+              disabled={trick !== "none"}
+              style={navBtnStyle}
+            >
+              🤸 FLIP
+            </button>
+            <button
+              onClick={() => setTrick("spin")}
+              disabled={trick !== "none"}
+              style={navBtnStyle}
+            >
+              🔄 SPIN
+            </button>
           </div>
 
-          {/* No longer disabled, so you can spam! */}
-          <button onClick={handleFeed} style={feedBtnStyle}>
+          <div style={dividerStyle} />
+
+          <button onClick={logic.handleFeed} style={actionBtnStyle}>
             DROP WORM 🪱
           </button>
-        </section>
+        </nav>
       </div>
 
       <Canvas shadows camera={{ position: [0, 0, 8], fov: 35 }}>
-        <Lighting mode={lightMode} />
+        <Lighting mode={logic.lightMode} />
         <BubbleStream />
-        <Substrate type={substrate} />
-        <Foliage visible={showGrass} />
+        <Substrate type={logic.substrate} />
+        <Foliage visible={logic.showGrass} type={foliageStyle} count={14} />
 
-        {/* Map through the worms array to render multiple worms */}
-        {worms.map((worm) => (
+        {logic.worms.map((worm) => (
           <Worm key={worm.id} spawnX={0} />
         ))}
 
         <AxolotlController
           isPetting={isPetting}
           setIsPetting={setIsPetting}
-          // If there is at least one worm in the water, she is in feeding mode
-          isFeeding={worms.length > 0}
-          colorPalette={currentColor}
-          mood={mood}
+          isFeeding={logic.worms.length > 0}
+          colorPalette={logic.currentColor}
+          mood={logic.mood}
           trick={trick}
           onTrickComplete={() => setTrick("none")}
         />
@@ -142,53 +156,81 @@ export default function Aquarium() {
   );
 }
 
-// Styles remain the same
-const glassCardStyle: React.CSSProperties = {
-  background: "rgba(255, 255, 255, 0.85)",
-  backdropFilter: "blur(12px)",
-  padding: "20px",
-  borderRadius: "24px",
+// --- UPDATED STYLES ---
+
+const headerContainerStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "0",
+  left: "0",
+  width: "100%",
   display: "flex",
   flexDirection: "column",
-  gap: "15px",
-  width: "240px",
-  border: "1px solid rgba(255,255,255,0.4)",
-  boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+  alignItems: "center",
+  padding: "30px 0",
+  zIndex: 100,
+  pointerEvents: "none",
 };
-const groupStyle: React.CSSProperties = {
+
+const titleWrapperStyle: React.CSSProperties = {
   display: "flex",
-  flexDirection: "column",
-  gap: "6px",
+  justifyContent: "center",
+  width: "100%",
+  marginBottom: "15px",
+  pointerEvents: "auto",
 };
-const rowStyle: React.CSSProperties = {
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "8px",
-};
-const labelStyle: React.CSSProperties = {
-  fontSize: "10px",
-  fontWeight: "bold",
-  color: "#0077b6",
-  letterSpacing: "0.5px",
-};
-const btnStyle: React.CSSProperties = {
-  padding: "8px 12px",
-  borderRadius: "10px",
+
+const nameInputStyle: React.CSSProperties = {
+  background: "transparent",
   border: "none",
-  background: "#f0f9ff",
+  color: "white",
+  fontSize: "42px", // Bigger, more impactful title
+  fontWeight: "900",
+  textAlign: "center",
+  outline: "none",
+  width: "80%", // Large hit area for easy clicking
+  textShadow: "0 4px 15px rgba(0,0,0,0.4)",
+  fontFamily: "system-ui, sans-serif",
+  letterSpacing: "-1px",
+};
+
+// ... Rest of the styles remain consistent with the capsule bar design
+const topBarStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: "15px",
+  background: "rgba(255, 255, 255, 0.15)",
+  backdropFilter: "blur(15px)",
+  padding: "10px 25px",
+  borderRadius: "50px",
+  border: "1px solid rgba(255,255,255,0.2)",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+  pointerEvents: "auto",
+};
+
+const navGroupStyle: React.CSSProperties = { display: "flex", gap: "8px" };
+const dividerStyle: React.CSSProperties = {
+  width: "1px",
+  height: "24px",
+  background: "rgba(255,255,255,0.3)",
+};
+const navBtnStyle: React.CSSProperties = {
+  padding: "8px 14px",
+  borderRadius: "20px",
+  border: "none",
+  background: "rgba(255,255,255,0.8)",
   color: "#0077b6",
   cursor: "pointer",
-  fontSize: "11px",
+  fontSize: "12px",
   fontWeight: "bold",
-  boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+  transition: "all 0.2s ease",
 };
-const feedBtnStyle: React.CSSProperties = {
-  padding: "14px",
-  borderRadius: "15px",
+const actionBtnStyle: React.CSSProperties = {
+  padding: "10px 20px",
+  borderRadius: "25px",
   border: "none",
-  background: "linear-gradient(135deg, #0077b6, #00b4d8)",
+  background: "linear-gradient(135deg, #ff9ff3, #f368e0)",
   color: "white",
   fontWeight: "bold",
   cursor: "pointer",
-  boxShadow: "0 4px 15px rgba(0,119,182,0.3)",
+  boxShadow: "0 4px 15px rgba(243, 104, 224, 0.4)",
 };
