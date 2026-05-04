@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-// Use the exact names from aquarium.ts to avoid "Duplicate identifier" and "No exported member"
 import type {
   AxolotlMood,
   LightMode,
@@ -9,9 +8,16 @@ import type {
 import { AXOLOTL_COLORS } from "../components/visuals/Axolotl/AxolotlStyles";
 import { SUBSTRATE_TYPES } from "../components/visuals/Environment/Substrate";
 
+/**
+ * useAquariumLogic Hook
+ * Refined [2026-05-04]
+ * - Added dual-feeding logic for standard Food and special Treats.
+ * - Ensures mood resets to "chill" to prevent Axolotl from getting stuck.
+ */
+
 export function useAquariumLogic() {
-  const [worms, setWorms] = useState<WormData[]>([]);
-  // Update state to use AxolotlMood
+  const [foods, setFoods] = useState<WormData[]>([]);
+  const [treats, setTreats] = useState<WormData[]>([]);
   const [mood, setMood] = useState<AxolotlMood>("chill");
   const [lightMode, setLightMode] = useState<LightMode>("day");
   const [colorIndex, setColorIndex] = useState(0);
@@ -20,15 +26,30 @@ export function useAquariumLogic() {
     useState<keyof typeof SUBSTRATE_TYPES>("gravel");
 
   const currentColor: ColorPalette = AXOLOTL_COLORS[colorIndex];
+
+  // Standard feeding: Flakes
   const handleFeed = useCallback(() => {
     const newId = Date.now();
-    setWorms((prev) => [...prev, { id: newId }]);
+    setFoods((prev) => [...prev, { id: newId }]);
+
+    // Flakes disappear after 3 seconds
+    setTimeout(() => {
+      setFoods((prev) => prev.filter((f) => f.id !== newId));
+    }, 3000);
+  }, []);
+
+  // Special feeding: Worm Treat
+  const handleDropTreat = useCallback(() => {
+    const newId = Date.now();
+    setTreats((prev) => [...prev, { id: newId }]);
     setMood("excited");
 
+    // Treat disappears after 2.1 seconds
     setTimeout(() => {
-      setWorms((prev) => prev.filter((w) => w.id !== newId));
+      setTreats((prev) => prev.filter((t) => t.id !== newId));
     }, 2100);
 
+    // Reset mood to "chill" after 4 seconds to resume normal swimming
     setTimeout(() => setMood("chill"), 4000);
   }, []);
 
@@ -41,13 +62,15 @@ export function useAquariumLogic() {
   }, [substrate]);
 
   return {
-    worms,
+    foods,
+    treats,
     mood,
     lightMode,
     showGrass,
     currentColor,
     substrate,
     handleFeed,
+    handleDropTreat,
     setMood,
     setLightMode,
     setShowGrass,
