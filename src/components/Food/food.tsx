@@ -1,57 +1,69 @@
-import React, { useRef, useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-/**
- * Food Component (Standard Diet)
- * [2026-05-04] Reverted to original flutter logic and standard material.
- * Adjusted geometry to be smaller for a more realistic fish food flake size.[cite: 3]
- */
-
 interface FoodProps {
-  spawnX?: number;
+  id: number;
+  spawnX: number;
+  spawnY: number;
+  spawnZ: number;
+  onConsumed: (id: number) => void;
+  onMissed: (id: number) => void;
 }
 
-export default function Food({ spawnX = 0 }: FoodProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
+const CATCH_TARGET = new THREE.Vector3(0, 0.05, 2);
 
-  // Randomize food color to mimic standard multi-colored fish flakes
-  // Kept inside useMemo so it only calculates once per flake on spawn[cite: 3]
-  const color = useMemo(() => {
-    const colors = ["#ff7f50", "#3cb371", "#ffd700"]; // Coral, MediumSeaGreen, Gold
+export default function Food({
+  id,
+  spawnX,
+  spawnY,
+  spawnZ,
+  onConsumed,
+  onMissed,
+}: FoodProps) {
+  const groupRef = useRef<THREE.Group>(null);
+  const handledRef = useRef(false);
+
+  const baseColor = useMemo(() => {
+    const colors = ["#ffd166", "#7bd88f", "#ff8fab", "#8ec5ff"];
     return colors[Math.floor(Math.random() * colors.length)];
   }, []);
+  const drift = useMemo(() => (Math.random() - 0.5) * 0.06, []);
+  const spin = useMemo(() => 1.5 + Math.random() * 2, []);
 
-  // Slight random offset so flakes don't drop in a perfectly straight line[cite: 3]
-  const randomOffset = useMemo(() => (Math.random() - 0.5) * 2, []);
+  useFrame(({ clock }, delta) => {
+    if (!groupRef.current || handledRef.current) return;
 
-  // Give each flake a unique rotation speed for a more natural flutter[cite: 3]
-  const rotationSpeed = useMemo(() => Math.random() * 2 + 1, []);
+    const elapsed = clock.elapsedTime;
+    const mesh = groupRef.current;
+    mesh.position.y -= delta * 0.72;
+    mesh.position.x = spawnX + drift + Math.sin(elapsed * 1.3 + id) * 0.025;
+    mesh.rotation.x += delta * spin;
+    mesh.rotation.y += delta * spin * 0.6;
 
-  useFrame((state, delta) => {
-    if (!meshRef.current) return;
+    const distanceToMouth = mesh.position.distanceTo(CATCH_TARGET);
+    if (distanceToMouth < 0.35) {
+      handledRef.current = true;
+      onConsumed(id);
+      return;
+    }
 
-    // Float down slowly (slower descent than the heavy worm)[cite: 3]
-    meshRef.current.position.y -= delta * 0.8;
-
-    // Flutter effect applied to the X and Y axes[cite: 3]
-    meshRef.current.rotation.x += delta * rotationSpeed;
-    meshRef.current.rotation.y += delta * rotationSpeed * 0.5;
-
-    // Gentle sway back and forth on the X axis as it sinks[cite: 3]
-    meshRef.current.position.x =
-      spawnX + randomOffset + Math.sin(state.clock.elapsedTime * 2) * 0.1;
+    if (mesh.position.y < -2.45) {
+      handledRef.current = true;
+      onMissed(id);
+    }
   });
 
   return (
-    // Z is set to 2.0 to match the Axolotl's feeding depth plane[cite: 3]
-    <mesh ref={meshRef} position={[spawnX + randomOffset, 3.0, 2.0]}>
-      {/* 
-          Flat cylinder to represent a fish flake. 
-          Reduced size from 0.08 to 0.04 for a "smaller" look.[cite: 3]
-      */}
-      <cylinderGeometry args={[0.04, 0.04, 0.005, 8]} />
-      <meshStandardMaterial color={color} roughness={0.8} />
-    </mesh>
+    <group ref={groupRef} position={[spawnX, spawnY, spawnZ]}>
+      <mesh rotation={[0.45, 0, 0]}>
+        <cylinderGeometry args={[0.04, 0.045, 0.02, 8]} />
+        <meshStandardMaterial color={baseColor} roughness={0.65} />
+      </mesh>
+      <mesh position={[0.02, 0.009, 0.01]} scale={0.45}>
+        <sphereGeometry args={[0.038, 8, 8]} />
+        <meshStandardMaterial color="#fff4dc" roughness={0.5} />
+      </mesh>
+    </group>
   );
 }

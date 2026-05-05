@@ -3,10 +3,19 @@
  * Centralized for TDD and cross-component consistency.
  */
 
-export type AxolotlMood = "chill" | "excited";
+export type AxolotlMood = "chill" | "excited" | "lazy";
 export type LightMode = "day" | "night";
 export type AxolotlTrick = "none" | "barrelRoll" | "backflip" | "spin";
 export type FoliageType = "seagrass" | "kelp" | "vines";
+export type FeedType = "food" | "treat";
+export type DecorationType =
+  | "shell"
+  | "star"
+  | "coral"
+  | "bubbleRing"
+  | "castle"
+  | "caveHideout";
+export type DecorationCategory = "decor" | "furniture";
 
 export interface ColorPalette {
   name: string;
@@ -17,13 +26,25 @@ export interface ColorPalette {
   glowIntensity?: number; // Optional: for dynamic lighting effects
 }
 
-export interface WormData {
+export interface FeedItem {
   id: number;
-  spawnX?: number;
+  spawnX: number;
+  spawnY: number;
+  spawnZ: number;
+}
+
+export interface DecorationItem {
+  id: number;
+  type: DecorationType;
+  category: DecorationCategory;
+  position: [number, number, number];
+  scale: number;
 }
 
 export interface AquariumState {
-  worms: WormData[];
+  foods: FeedItem[];
+  treats: FeedItem[];
+  decorations: DecorationItem[];
   mood: AxolotlMood;
   lightMode: LightMode;
   showGrass: boolean;

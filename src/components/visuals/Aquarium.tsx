@@ -2,203 +2,131 @@ import React, { useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ContactShadows, Environment } from "@react-three/drei";
 import { useAquariumLogic } from "../../hooks/useAquariumLogic";
-
-// Components
-import AxolotlController from "./Axolotl/AxolotlController.tsx";
-import Substrate from "./Environment/Substrate.tsx";
-import { BubbleStream } from "./Environment/EnvironmentEffects.tsx";
-import Foliage, { type FoliageType } from "./Environment/CreateFoliage.tsx";
-import Lighting from "./Environment/Lighting.tsx";
-
-// Types & Styles
-import type { AxolotlMood, AxolotlTrick } from "../../types/aquarium.ts";
+import type { AxolotlTrick, FoliageType } from "../../types/aquarium";
+import AxolotlController from "./Axolotl/AxolotlController";
+import Substrate from "./Environment/Substrate";
+import { BubbleStream } from "./Environment/EnvironmentEffects";
+import Foliage from "./Environment/CreateFoliage";
+import Lighting from "./Environment/Lighting";
+import Food from "../Food/food";
+import Treat from "../Food/treat";
+import DecorationLayer from "./Decorations/DecorationLayer";
+import AquariumControls from "./UI/AquariumControls";
 import "./RainbowButtons.css";
 
-// Logic-based items (Casing fixed to match file system)
-import Food from "../Food/food.tsx";
-import Treat from "../Food/treat.tsx";
-
-/**
- * Main Aquarium Component
- * Manages the 3D Canvas, UI Overlay, and state for interactions.
- */
 export default function Aquarium() {
-  // Custom hook containing all the complex logic (color cycles, feeding arrays, light modes)
   const logic = useAquariumLogic();
-
-  // Local UI states
   const [trick, setTrick] = useState<AxolotlTrick>("none");
   const [isPetting, setIsPetting] = useState(false);
+  const [deleteMode, setDeleteMode] = useState(false);
   const [foliageStyle, setFoliageStyle] = useState<FoliageType>("seagrass");
-  const [petName, setPetName] = useState("");
+  const [petName, setPetName] = useState("Bubbles Aquarium");
 
-  // Cycle through plant types: Seagrass -> Kelp -> Vines
   const cycleFoliage = () => {
     const types: FoliageType[] = ["seagrass", "kelp", "vines"];
     const nextIndex = (types.indexOf(foliageStyle) + 1) % types.length;
     setFoliageStyle(types[nextIndex]);
   };
 
-  // Trigger petting animation for 2 seconds
   const handlePetButtonClick = () => {
     setIsPetting(true);
-    setTimeout(() => setIsPetting(false), 2000);
+    setTimeout(() => setIsPetting(false), 1500);
   };
 
   return (
     <div
       className="aquarium-container"
-      style={{ background: logic.lightMode === "day" ? "#a2d2ff" : "#023e8a" }}
+      style={{
+        background:
+          logic.lightMode === "day"
+            ? "radial-gradient(circle at 20% 10%, #9de6ff 0%, #5fc4ff 45%, #2f78cc 100%)"
+            : "radial-gradient(circle at 25% 8%, #3d5ca8 0%, #1d2e63 55%, #09152f 100%)",
+      }}
     >
       <div className="header-container">
-        {/* Name Input Section */}
-        <div className="title-wrapper">
-          <input
-            type="text"
-            value={petName}
-            onChange={(e) => setPetName(e.target.value)}
-            placeholder="Name your Axolotl..."
-            className="name-input"
-            spellCheck={false}
-          />
-        </div>
-
-        {/* Interaction Bar */}
-        <nav className="top-bar">
-          {/* Group 1: Appearance */}
-          <div className="nav-group">
-            <span className="section-label">AXOLOTL</span>
-            <button onClick={logic.cycleColor} className="rainbow-btn btn-red">
-              {logic.currentColor.name.toUpperCase()}
-            </button>
-            <button
-              onClick={() =>
-                logic.setMood((m: AxolotlMood) =>
-                  m === "chill" ? "excited" : "chill",
-                )
-              }
-              className="rainbow-btn btn-orange"
-            >
-              {logic.mood === "excited" ? "FAST" : "SLOW"}
-            </button>
-          </div>
-
-          <div className="divider" />
-
-          {/* Group 2: World Settings */}
-          <div className="nav-group">
-            <span className="section-label">TANK</span>
-            <button
-              onClick={() =>
-                logic.setLightMode((l) => (l === "day" ? "night" : "day"))
-              }
-              className="rainbow-btn btn-yellow"
-            >
-              {logic.lightMode === "day" ? "☀️ DAY" : "🌙 NIGHT"}
-            </button>
-            <button
-              onClick={logic.cycleSubstrate}
-              className="rainbow-btn btn-green"
-            >
-              {logic.substrate.toUpperCase()}
-            </button>
-            <button
-              onClick={cycleFoliage}
-              className="rainbow-btn btn-teal"
-              disabled={!logic.showGrass}
-            >
-              {logic.showGrass ? foliageStyle.toUpperCase() : "PLANTS OFF"}
-            </button>
-          </div>
-
-          <div className="divider" />
-
-          {/* Group 3: Tricks (Now with unique colors) */}
-          <div className="nav-group">
-            <span className="section-label">TRICKS</span>
-            <button
-              onClick={() => setTrick("barrelRoll")}
-              disabled={trick !== "none"}
-              className="rainbow-btn btn-blue"
-            >
-              ROLL
-            </button>
-            <button
-              onClick={() => setTrick("backflip")}
-              disabled={trick !== "none"}
-              className="rainbow-btn btn-indigo"
-            >
-              FLIP
-            </button>
-            <button
-              onClick={() => setTrick("spin")}
-              disabled={trick !== "none"}
-              className="rainbow-btn btn-purple"
-            >
-              SPIN
-            </button>
-          </div>
-
-          <div className="divider" />
-
-          {/* Group 4: Interaction */}
-          <div className="nav-group">
-            <span className="section-label">CARE</span>
-            <button
-              onClick={handlePetButtonClick}
-              className="rainbow-btn btn-pink"
-            >
-              PET
-            </button>
-            <button onClick={logic.handleFeed} className="rainbow-btn btn-rose">
-              FEED
-            </button>
-            <button
-              onClick={logic.handleDropTreat}
-              className="rainbow-btn btn-red"
-            >
-              TREAT
-            </button>
-          </div>
-        </nav>
+        <AquariumControls
+          petName={petName}
+          setPetName={setPetName}
+          mood={logic.mood}
+          lightMode={logic.lightMode}
+          substrate={logic.substrate}
+          foliageStyle={foliageStyle}
+          showGrass={logic.showGrass}
+          trick={trick}
+          canAddDecoration={logic.decorations.length < logic.maxDecorations}
+          decorationCount={logic.decorations.length}
+          maxDecorations={logic.maxDecorations}
+          deleteMode={deleteMode}
+          currentColor={logic.currentColor}
+          isCustomPalette={logic.isCustomPalette}
+          themePresets={logic.themePresets}
+          onSetDeleteMode={setDeleteMode}
+          onUpdateCustomPalette={logic.updateCustomPalette}
+          onApplyThemePreset={logic.applyThemePreset}
+          onSetMood={logic.setMood}
+          onToggleLightMode={() =>
+            logic.setLightMode((mode) => (mode === "day" ? "night" : "day"))
+          }
+          onCycleSubstrate={logic.cycleSubstrate}
+          onCycleFoliage={cycleFoliage}
+          onSetTrick={setTrick}
+          onPet={handlePetButtonClick}
+          onFeed={logic.handleFeed}
+          onTreat={logic.handleDropTreat}
+          onAddDecoration={logic.addDecoration}
+        />
       </div>
 
-      {/* 3D Render Engine */}
-      <Canvas shadows camera={{ position: [0, 0, 8], fov: 35 }}>
-        {/* Environment setup */}
+      <Canvas shadows camera={{ position: [0, 0.25, 8], fov: 35 }}>
         <Lighting mode={logic.lightMode} />
         <BubbleStream />
         <Substrate type={logic.substrate} />
         <Foliage visible={logic.showGrass} type={foliageStyle} count={14} />
 
-        {/* Dynamic Items mapping */}
+        <DecorationLayer
+          items={logic.decorations}
+          onMoveDecoration={logic.moveDecoration}
+          deleteMode={deleteMode}
+          onRemoveDecoration={logic.removeDecoration}
+        />
+
         {logic.foods.map((food) => (
-          <Food key={food.id} spawnX={0} />
+          <Food
+            key={food.id}
+            id={food.id}
+            spawnX={food.spawnX}
+            spawnY={food.spawnY}
+            spawnZ={food.spawnZ}
+            onConsumed={logic.consumeFood}
+            onMissed={logic.missFood}
+          />
         ))}
 
         {logic.treats.map((treat) => (
-          <Treat key={treat.id} spawnX={0} />
+          <Treat
+            key={treat.id}
+            id={treat.id}
+            spawnX={treat.spawnX}
+            spawnY={treat.spawnY}
+            spawnZ={treat.spawnZ}
+            onConsumed={logic.consumeTreat}
+            onMissed={logic.missTreat}
+          />
         ))}
 
-        {/* The Main Character */}
         <AxolotlController
           isPetting={isPetting}
           setIsPetting={setIsPetting}
           isFeeding={logic.foods.length > 0 || logic.treats.length > 0}
+          snackCount={logic.snackCount}
           colorPalette={logic.currentColor}
           mood={logic.mood}
           trick={trick}
           onTrickComplete={() => setTrick("none")}
         />
 
-        {/* Final touches: Lighting & Shadows */}
         <Environment preset="sunset" />
-        <ContactShadows
-          position={[0, -2.45, 0]}
-          opacity={0.3}
-          scale={15}
-          blur={2.5}
-        />
+        <ContactShadows position={[0, -2.45, 0]} opacity={0.26} scale={14} blur={2.8} />
       </Canvas>
     </div>
   );

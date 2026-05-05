@@ -11,8 +11,8 @@ export function FeedingHandler({ rootRef, isFeeding }: FeedingProps) {
   useFrame(() => {
     if (!isFeeding || !rootRef.current) return;
 
-    // Target Z matches the target location of the worm spawn (2.0)
-    const targetPos = new THREE.Vector3(0, 0, 2.0);
+    // Move to the front-center where food naturally falls.
+    const targetPos = new THREE.Vector3(0, 0.05, 2.0);
     const distance = rootRef.current.position.distanceTo(targetPos);
 
     // Math logic: Increase speed as she gets closer for a "snap" effect
@@ -22,7 +22,7 @@ export function FeedingHandler({ rootRef, isFeeding }: FeedingProps) {
     // Nose points slightly up for the catch
     rootRef.current.rotation.x = THREE.MathUtils.lerp(
       rootRef.current.rotation.x,
-      -0.3,
+      -0.18,
       0.1,
     );
     rootRef.current.rotation.y = THREE.MathUtils.lerp(

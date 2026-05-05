@@ -17,6 +17,7 @@ interface ControllerProps {
   isPetting: boolean;
   setIsPetting: (val: boolean) => void;
   isFeeding: boolean;
+  snackCount: number;
   colorPalette: ColorPalette;
   mood: AxolotlMood;
   trick: AxolotlTrick;
@@ -27,6 +28,7 @@ export default function AxolotlController({
   isPetting,
   setIsPetting,
   isFeeding,
+  snackCount,
   colorPalette,
   mood,
   trick,
@@ -71,6 +73,7 @@ export default function AxolotlController({
           isPetting={isPetting}
           isFeeding={isFeeding}
           colorPalette={colorPalette}
+          snackCount={snackCount}
         />
       </group>
     </Float>

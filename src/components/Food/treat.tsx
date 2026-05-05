@@ -1,66 +1,83 @@
-import React, { useRef, useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-/**
- * Treat Component (Special Food)
- * Refined [2026-05-04]
- * - Renamed from Worm.tsx to Treat.tsx to fit the new feeding paradigm.
- * - Updated the material for a fleshier, more organic look.
- * - Intensified the wiggle to trigger excited Axolotl behavior.
- */
-
 interface TreatProps {
-  spawnX?: number;
+  id: number;
+  spawnX: number;
+  spawnY: number;
+  spawnZ: number;
+  onConsumed: (id: number) => void;
+  onMissed: (id: number) => void;
 }
 
-export default function Treat({ spawnX = 0 }: TreatProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
+const CATCH_TARGET = new THREE.Vector3(0, 0.05, 2);
 
-  // Improved organic curve points for a realistic segmented look
-  const points = useMemo(
-    () => [
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(0.05, -0.08, 0.02),
-      new THREE.Vector3(-0.05, -0.15, -0.02),
-      new THREE.Vector3(0.04, -0.22, 0.03),
-      new THREE.Vector3(-0.02, -0.3, 0),
-    ],
+export default function Treat({
+  id,
+  spawnX,
+  spawnY,
+  spawnZ,
+  onConsumed,
+  onMissed,
+}: TreatProps) {
+  const rootRef = useRef<THREE.Group>(null);
+  const wormRef = useRef<THREE.Mesh>(null);
+  const handledRef = useRef(false);
+  const drift = useMemo(() => (Math.random() - 0.5) * 0.08, []);
+  const curve = useMemo(
+    () =>
+      new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0.04, -0.1, 0.03),
+        new THREE.Vector3(-0.05, -0.2, -0.02),
+        new THREE.Vector3(0.04, -0.31, 0.03),
+        new THREE.Vector3(-0.03, -0.42, 0),
+      ]),
     [],
   );
 
-  const curve = useMemo(() => new THREE.CatmullRomCurve3(points), [points]);
-  const randomOffset = useMemo(() => (Math.random() - 0.5) * 1.5, []);
+  useFrame(({ clock }, delta) => {
+    if (!rootRef.current || handledRef.current) return;
+    const elapsed = clock.elapsedTime;
+    rootRef.current.position.y -= delta * 0.83;
+    rootRef.current.position.x = spawnX + drift + Math.sin(elapsed * 1.4 + id) * 0.04;
+    rootRef.current.rotation.z = Math.sin(elapsed * 10 + id) * 0.22;
+    rootRef.current.rotation.x = Math.cos(elapsed * 7 + id) * 0.12;
 
-  useFrame((state, delta) => {
-    if (!meshRef.current) return;
+    if (wormRef.current) {
+      wormRef.current.rotation.y = Math.sin(elapsed * 8.5 + id) * 0.22;
+      wormRef.current.rotation.x = Math.cos(elapsed * 6.8 + id) * 0.12;
+    }
 
-    // Sinks slightly faster than flakes due to being a heavier object
-    meshRef.current.position.y -= delta * 1.0;
+    const distanceToMouth = rootRef.current.position.distanceTo(CATCH_TARGET);
+    if (distanceToMouth < 0.4) {
+      handledRef.current = true;
+      onConsumed(id);
+      return;
+    }
 
-    const time = state.clock.elapsedTime;
-
-    // Intense, erratic wiggle for a more "alive" feel
-    meshRef.current.rotation.z = Math.sin(time * 12) * 0.5;
-    meshRef.current.rotation.x = Math.cos(time * 8) * 0.3;
-
-    // Subtle drift
-    meshRef.current.position.x =
-      spawnX + randomOffset + Math.sin(time * 3) * 0.08;
+    if (rootRef.current.position.y < -2.45) {
+      handledRef.current = true;
+      onMissed(id);
+    }
   });
 
   return (
-    // Spawn exactly on the Axolotl's depth plane (Z: 2.0)
-    <mesh ref={meshRef} position={[spawnX + randomOffset, 2.5, 2.0]}>
-      {/* Slightly thicker tube geometry than the previous iteration */}
-      <tubeGeometry args={[curve, 32, 0.025, 12, false]} />
-      {/* Fleshy, realistic earthworm color profile */}
-      <meshStandardMaterial
-        color={"#d98585"} // Soft pinkish-brown
-        roughness={0.6}
-        emissive={"#5c2e2e"}
-        emissiveIntensity={0.1}
-      />
-    </mesh>
+    <group ref={rootRef} position={[spawnX, spawnY, spawnZ]}>
+      <mesh ref={wormRef}>
+        <tubeGeometry args={[curve, 36, 0.028, 12, false]} />
+        <meshStandardMaterial
+          color="#d88e8b"
+          roughness={0.7}
+          emissive="#7a3a3f"
+          emissiveIntensity={0.1}
+        />
+      </mesh>
+      <mesh position={[0.005, 0.02, 0]} scale={0.35}>
+        <sphereGeometry args={[0.055, 8, 8]} />
+        <meshStandardMaterial color="#f7c2b8" roughness={0.55} />
+      </mesh>
+    </group>
   );
 }

@@ -30,15 +30,17 @@ export function useAxolotlMovement({
 
     // 1. Normal Pathing Logic
     // Speed and amplitude vary based on the axolotl's current mood.
-    const speed = mood === "excited" ? 0.6 : 0.28;
+    const speed = mood === "excited" ? 0.6 : mood === "lazy" ? 0.2 : 0.28;
     const timeFactor = t * speed;
-    const ampX = mood === "excited" ? 4.0 : 3.0;
+    const ampX = mood === "excited" ? 3.3 : mood === "lazy" ? 1.7 : 2.6;
+    const ampY = mood === "lazy" ? 0.22 : 0.45;
+    const ampZ = mood === "lazy" ? 0.5 : 0.75;
 
     // Calculate position using sine/cosine for a natural "figure-8" or oval path
     rootRef.current.position.set(
       Math.sin(timeFactor) * ampX,
-      Math.sin(timeFactor * 0.55) * 0.55,
-      Math.cos(timeFactor * 0.7) * 0.9,
+      Math.sin(timeFactor * 0.55) * ampY,
+      Math.cos(timeFactor * 0.7) * ampZ,
     );
 
     // 2. Procedural Rotation
