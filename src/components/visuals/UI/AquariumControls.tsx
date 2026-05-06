@@ -9,6 +9,10 @@ import type {
 } from "../../../types/aquarium";
 import { DECORATION_OPTIONS } from "../Decorations/DecorationCatalog";
 
+/**
+ * Props for the AquariumControls component
+ * Includes state and handlers for the axolotl, environment, and UI theme.
+ */
 interface AquariumControlsProps {
   petName: string;
   setPetName: (name: string) => void;
@@ -35,11 +39,23 @@ interface AquariumControlsProps {
   onFeed: () => void;
   onTreat: () => void;
   onAddDecoration: (type: DecorationType) => void;
-  onUpdateCustomPalette: (field: "main" | "light" | "dark", value: string) => void;
+  onUpdateCustomPalette: (
+    field: "main" | "light" | "dark",
+    value: string,
+  ) => void;
   onApplyThemePreset: (name: string) => void;
 }
 
-function Group({ title, children }: { title: string; children: React.ReactNode }) {
+/**
+ * Helper component for grouping UI buttons into logical categories.
+ */
+function Group({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="main-group">
       <p className="main-group-title">{title}</p>
@@ -78,13 +94,18 @@ export default function AquariumControls({
   onApplyThemePreset,
 }: AquariumControlsProps) {
   const [showColorLab, setShowColorLab] = useState(true);
-  const decorOptions = DECORATION_OPTIONS.filter((item) => item.category === "decor");
+
+  // Categorize decorations for side-panel organization
+  const decorOptions = DECORATION_OPTIONS.filter(
+    (item) => item.category === "decor",
+  );
   const furnitureOptions = DECORATION_OPTIONS.filter(
     (item) => item.category === "furniture",
   );
 
   return (
     <>
+      {/* Dynamic Header for Aquarium Naming */}
       <div className="title-ribbon">
         <input
           type="text"
@@ -97,16 +118,18 @@ export default function AquariumControls({
         />
       </div>
 
+      {/* LEFT SIDE: Decoration & Furniture Management */}
       <section className="side-panel left-panel">
         <p className="side-title">Decorations</p>
         <span className="side-count">
           {decorationCount}/{maxDecorations}
         </span>
+
         <p className="side-subtitle">Decor</p>
         {decorOptions.map((option) => (
           <button
             key={option.type}
-            className={`rainbow-btn side-btn ${option.colorClass}`}
+            className={`rainbow-btn side-btn btn-teal`} // Environment/Object category (Teal)
             disabled={!canAddDecoration}
             onClick={() => onAddDecoration(option.type)}
           >
@@ -119,7 +142,7 @@ export default function AquariumControls({
         {furnitureOptions.map((option) => (
           <button
             key={option.type}
-            className={`rainbow-btn side-btn ${option.colorClass}`}
+            className={`rainbow-btn side-btn btn-blue`} // Structural category (Blue)
             disabled={!canAddDecoration}
             onClick={() => onAddDecoration(option.type)}
           >
@@ -127,14 +150,16 @@ export default function AquariumControls({
           </button>
         ))}
 
+        {/* Delete Mode Toggle: Uses btn-rose as a standout warning color */}
         <button
-          className={`rainbow-btn side-btn ${deleteMode ? "btn-red" : "btn-indigo"}`}
+          className={`rainbow-btn side-btn ${deleteMode ? "btn-rose" : "btn-indigo"}`}
           onClick={() => onSetDeleteMode(!deleteMode)}
         >
           {deleteMode ? "Done Deleting" : "Delete Mode"}
         </button>
       </section>
 
+      {/* RIGHT SIDE: Color Lab & Custom Palettes */}
       <section className="side-panel right-panel">
         <button
           className="rainbow-btn side-btn btn-teal"
@@ -196,31 +221,34 @@ export default function AquariumControls({
         )}
       </section>
 
+      {/* BOTTOM CENTER: Main Functional Controls */}
       <section className="main-controls-bar">
+        {/* Care Group: Consolidated to Tropical Blue (Primary Interaction) */}
         <Group title="Care">
-          <button onClick={onPet} className="rainbow-btn btn-pink">
+          <button onClick={onPet} className="rainbow-btn btn-red">
             Pet
           </button>
-          <button onClick={onFeed} className="rainbow-btn btn-rose">
+          <button onClick={onFeed} className="rainbow-btn btn-orange">
             Feed
           </button>
-          <button onClick={onTreat} className="rainbow-btn btn-red">
+          <button onClick={onTreat} className="rainbow-btn btn-yellow">
             Treat
           </button>
         </Group>
 
         <div className="main-separator" />
 
+        {/* Behavior Group: Consolidated to Deep Sea Purple (Internal State) */}
         <Group title="Behavior">
           <button
             onClick={() => onSetMood("excited")}
-            className={`rainbow-btn ${mood === "excited" ? "btn-orange" : "btn-blue"}`}
+            className={`rainbow-btn ${mood === "excited" ? "btn-pink" : "btn-purple"}`}
           >
             Excited
           </button>
           <button
             onClick={() => onSetMood("chill")}
-            className={`rainbow-btn ${mood === "chill" ? "btn-green" : "btn-teal"}`}
+            className={`rainbow-btn ${mood === "chill" ? "btn-indigo" : "btn-purple"}`}
           >
             Chill
           </button>
@@ -234,16 +262,17 @@ export default function AquariumControls({
 
         <div className="main-separator" />
 
+        {/* Environment Group: Consolidated to Mint/Teal (Global Setting) */}
         <Group title="Environment">
-          <button onClick={onToggleLightMode} className="rainbow-btn btn-yellow">
+          <button onClick={onToggleLightMode} className="rainbow-btn btn-green">
             {lightMode === "day" ? "Day" : "Night"}
           </button>
-          <button onClick={onCycleSubstrate} className="rainbow-btn btn-green">
+          <button onClick={onCycleSubstrate} className="rainbow-btn btn-teal">
             {substrate}
           </button>
           <button
             onClick={onCycleFoliage}
-            className="rainbow-btn btn-blue"
+            className="rainbow-btn btn-green"
             disabled={!showGrass}
           >
             {showGrass ? foliageStyle : "Plants Off"}
@@ -252,25 +281,26 @@ export default function AquariumControls({
 
         <div className="main-separator" />
 
+        {/* Tricks Group: Consolidated to Cyan (Action/Skill) */}
         <Group title="Tricks">
           <button
             onClick={() => onSetTrick("barrelRoll")}
             disabled={trick !== "none"}
-            className="rainbow-btn btn-indigo"
+            className="rainbow-btn btn-blue"
           >
             Roll
           </button>
           <button
             onClick={() => onSetTrick("backflip")}
             disabled={trick !== "none"}
-            className="rainbow-btn btn-purple"
+            className="rainbow-btn btn-blue"
           >
             Flip
           </button>
           <button
             onClick={() => onSetTrick("spin")}
             disabled={trick !== "none"}
-            className="rainbow-btn btn-teal"
+            className="rainbow-btn btn-blue"
           >
             Spin
           </button>

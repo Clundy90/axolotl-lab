@@ -6,7 +6,7 @@
 export type AxolotlMood = "chill" | "excited" | "lazy";
 export type LightMode = "day" | "night";
 export type AxolotlTrick = "none" | "barrelRoll" | "backflip" | "spin";
-export type FoliageType = "seagrass" | "kelp" | "vines";
+export type FoliageType = "grass" | "kelp" | "vines";
 export type FeedType = "food" | "treat";
 export type DecorationType =
   | "shell"
@@ -14,7 +14,8 @@ export type DecorationType =
   | "coral"
   | "bubbleRing"
   | "castle"
-  | "caveHideout";
+  | "caveHideout"
+  | "treasureBox";
 export type DecorationCategory = "decor" | "furniture";
 
 export interface ColorPalette {

@@ -12,7 +12,7 @@ import * as THREE from "three";
  * - Fixed TS7053 indexing error by explicitly typing PlantBlade props.
  */
 
-export type FoliageType = "seagrass" | "kelp" | "vines";
+export type FoliageType = "grass" | "kelp" | "vines";
 
 interface FoliageProps {
   visible: boolean;
@@ -31,7 +31,7 @@ interface PlantBladeProps {
 export default function Foliage({
   visible,
   count = 12,
-  type = "seagrass",
+  type = "grass",
 }: FoliageProps) {
   if (!visible) return null;
 
@@ -97,7 +97,7 @@ function PlantBlade({
   });
 
   const config = {
-    seagrass: { color: "#2d6a4f", width: 0.08, height: 1.5, opacity: 0.9 },
+    grass: { color: "#2d6a4f", width: 0.08, height: 1.5, opacity: 0.9 },
     kelp: { color: "#1b4332", width: 0.2, height: 2.5, opacity: 0.8 },
     vines: { color: "#7b2cbf", width: 0.12, height: 2.2, opacity: 0.7 },
   }[type];

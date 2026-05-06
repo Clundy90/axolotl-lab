@@ -19,11 +19,11 @@ export default function Aquarium() {
   const [trick, setTrick] = useState<AxolotlTrick>("none");
   const [isPetting, setIsPetting] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
-  const [foliageStyle, setFoliageStyle] = useState<FoliageType>("seagrass");
-  const [petName, setPetName] = useState("Bubbles Aquarium");
+  const [foliageStyle, setFoliageStyle] = useState<FoliageType>("grass");
+  const [petName, setPetName] = useState("Type a name...");
 
   const cycleFoliage = () => {
-    const types: FoliageType[] = ["seagrass", "kelp", "vines"];
+    const types: FoliageType[] = ["grass", "kelp", "vines"];
     const nextIndex = (types.indexOf(foliageStyle) + 1) % types.length;
     setFoliageStyle(types[nextIndex]);
   };
@@ -62,7 +62,6 @@ export default function Aquarium() {
           themePresets={logic.themePresets}
           onSetDeleteMode={setDeleteMode}
           onUpdateCustomPalette={logic.updateCustomPalette}
-          onApplyThemePreset={logic.applyThemePreset}
           onSetMood={logic.setMood}
           onToggleLightMode={() =>
             logic.setLightMode((mode) => (mode === "day" ? "night" : "day"))
@@ -73,6 +72,11 @@ export default function Aquarium() {
           onPet={handlePetButtonClick}
           onFeed={logic.handleFeed}
           onTreat={logic.handleDropTreat}
+          onApplyThemePreset={(name: string) =>
+            logic.applyThemePreset(
+              name as Parameters<typeof logic.applyThemePreset>[0],
+            )
+          }
           onAddDecoration={logic.addDecoration}
         />
       </div>
@@ -126,7 +130,12 @@ export default function Aquarium() {
         />
 
         <Environment preset="sunset" />
-        <ContactShadows position={[0, -2.45, 0]} opacity={0.26} scale={14} blur={2.8} />
+        <ContactShadows
+          position={[0, -2.45, 0]}
+          opacity={0.26}
+          scale={14}
+          blur={2.8}
+        />
       </Canvas>
     </div>
   );
