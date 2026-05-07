@@ -14,20 +14,31 @@ import DecorationLayer from "./Decorations/DecorationLayer";
 import AquariumControls from "./UI/AquariumControls";
 import "./RainbowButtons.css";
 
+/**
+ * Aquarium Component
+ * Refined [2026-05-07]
+ * - Orchestrates the 3D scene and the UI overlay.
+ * - Bridges the useAquariumLogic hook with the visual controllers.
+ * - Handles the granular color palette for the Axolotl (body, gills, fins, etc.)
+ */
 export default function Aquarium() {
   const logic = useAquariumLogic();
+
+  // Local UI State for animations and view settings
   const [trick, setTrick] = useState<AxolotlTrick>("none");
   const [isPetting, setIsPetting] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
   const [foliageStyle, setFoliageStyle] = useState<FoliageType>("grass");
-  const [petName, setPetName] = useState("Type a name...");
+  const [petName, setPetName] = useState("");
 
+  /** Cycles through available foliage visual styles */
   const cycleFoliage = () => {
     const types: FoliageType[] = ["grass", "kelp", "vines"];
     const nextIndex = (types.indexOf(foliageStyle) + 1) % types.length;
     setFoliageStyle(types[nextIndex]);
   };
 
+  /** Triggers the momentary petting state for the axolotl controller */
   const handlePetButtonClick = () => {
     setIsPetting(true);
     setTimeout(() => setIsPetting(false), 1500);
@@ -43,6 +54,7 @@ export default function Aquarium() {
             : "radial-gradient(circle at 25% 8%, #3d5ca8 0%, #1d2e63 55%, #09152f 100%)",
       }}
     >
+      {/* UI LAYER: Controls for the Axolotl and Environment */}
       <div className="header-container">
         <AquariumControls
           petName={petName}
@@ -57,9 +69,11 @@ export default function Aquarium() {
           decorationCount={logic.decorations.length}
           maxDecorations={logic.maxDecorations}
           deleteMode={deleteMode}
+          // Color & Theme Logic
           currentColor={logic.currentColor}
           isCustomPalette={logic.isCustomPalette}
           themePresets={logic.themePresets}
+          // Event Handlers
           onSetDeleteMode={setDeleteMode}
           onUpdateCustomPalette={logic.updateCustomPalette}
           onSetMood={logic.setMood}
@@ -73,20 +87,20 @@ export default function Aquarium() {
           onFeed={logic.handleFeed}
           onTreat={logic.handleDropTreat}
           onApplyThemePreset={(name: string) =>
-            logic.applyThemePreset(
-              name as Parameters<typeof logic.applyThemePreset>[0],
-            )
+            logic.applyThemePreset(name as any)
           }
           onAddDecoration={logic.addDecoration}
         />
       </div>
 
+      {/* 3D RENDER LAYER: React Three Fiber Canvas */}
       <Canvas shadows camera={{ position: [0, 0.25, 8], fov: 35 }}>
         <Lighting mode={logic.lightMode} />
         <BubbleStream />
         <Substrate type={logic.substrate} />
         <Foliage visible={logic.showGrass} type={foliageStyle} count={14} />
 
+        {/* Handles placement, movement, and deletion of 3D objects */}
         <DecorationLayer
           items={logic.decorations}
           onMoveDecoration={logic.moveDecoration}
@@ -94,6 +108,7 @@ export default function Aquarium() {
           onRemoveDecoration={logic.removeDecoration}
         />
 
+        {/* Dynamic Food Items */}
         {logic.foods.map((food) => (
           <Food
             key={food.id}
@@ -106,6 +121,7 @@ export default function Aquarium() {
           />
         ))}
 
+        {/* Dynamic Treat Items */}
         {logic.treats.map((treat) => (
           <Treat
             key={treat.id}
@@ -118,6 +134,7 @@ export default function Aquarium() {
           />
         ))}
 
+        {/* Main Axolotl Logic and Animation Controller */}
         <AxolotlController
           isPetting={isPetting}
           setIsPetting={setIsPetting}

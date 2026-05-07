@@ -1,10 +1,11 @@
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import type { ColorPalette } from "../../../../types/aquarium";
 
 interface TailProps {
-  colors: ColorPalette;
+  tailColor: string;
+  finColor: string;
+  glow: number;
 }
 
 const SEGMENTS = [
@@ -14,48 +15,73 @@ const SEGMENTS = [
   { radiusA: 0.12, radiusB: 0.07, length: 0.28, amp: 0.34, yFin: 0.12 },
 ];
 
-export default function Tail({ colors }: TailProps) {
-  const segment0Ref = useRef<THREE.Group>(null);
-  const segment1Ref = useRef<THREE.Group>(null);
-  const segment2Ref = useRef<THREE.Group>(null);
-  const segment3Ref = useRef<THREE.Group>(null);
-  const refs = [segment0Ref, segment1Ref, segment2Ref, segment3Ref];
+export default function Tail({ tailColor, finColor, glow }: TailProps) {
+  // Creating an array of refs for the wave animation
+  const refs = [
+    useRef<THREE.Group>(null),
+    useRef<THREE.Group>(null),
+    useRef<THREE.Group>(null),
+    useRef<THREE.Group>(null),
+  ];
 
   useFrame(({ clock }) => {
     const wave = clock.elapsedTime * 3.4;
     refs.forEach((ref, index) => {
       if (!ref.current) return;
-      ref.current.rotation.y = Math.sin(wave - index * 0.52) * SEGMENTS[index].amp;
+      // Tail swing physics
+      ref.current.rotation.y =
+        Math.sin(wave - index * 0.52) * SEGMENTS[index].amp;
       ref.current.rotation.x = Math.cos(wave * 0.7 - index * 0.4) * 0.02;
     });
   });
 
   return (
     <group position={[0, -0.01, -0.5]}>
+      {/* Segment 0 */}
       <group ref={refs[0]}>
-        <mesh position={[0, 0, -SEGMENTS[0].length * 0.5]} rotation={[Math.PI / 2, 0, 0]}>
+        <mesh
+          position={[0, 0, -SEGMENTS[0].length * 0.5]}
+          rotation={[Math.PI / 2, 0, 0]}
+        >
           <cylinderGeometry
-            args={[SEGMENTS[0].radiusA, SEGMENTS[0].radiusB, SEGMENTS[0].length, 16]}
+            args={[
+              SEGMENTS[0].radiusA,
+              SEGMENTS[0].radiusB,
+              SEGMENTS[0].length,
+              16,
+            ]}
           />
-          <meshStandardMaterial color={colors.main} roughness={0.66} />
+          <meshStandardMaterial color={tailColor} roughness={0.66} />
         </mesh>
-        <mesh position={[0, SEGMENTS[0].yFin, -SEGMENTS[0].length * 0.5]} scale={[0.13, 1, 1.3]}>
+        <mesh
+          position={[0, SEGMENTS[0].yFin, -SEGMENTS[0].length * 0.5]}
+          scale={[0.13, 1, 1.3]}
+        >
           <sphereGeometry args={[0.16, 14, 14]} />
           <meshStandardMaterial
-            color={colors.dark}
+            color={finColor}
             transparent
             opacity={0.72}
-            emissive={colors.sparkleColor ?? colors.light}
-            emissiveIntensity={0.45}
+            emissive={finColor}
+            emissiveIntensity={glow * 0.4}
           />
         </mesh>
 
+        {/* Segment 1 */}
         <group position={[0, 0, -SEGMENTS[0].length + 0.035]} ref={refs[1]}>
-          <mesh position={[0, 0, -SEGMENTS[1].length * 0.5]} rotation={[Math.PI / 2, 0, 0]}>
+          <mesh
+            position={[0, 0, -SEGMENTS[1].length * 0.5]}
+            rotation={[Math.PI / 2, 0, 0]}
+          >
             <cylinderGeometry
-              args={[SEGMENTS[1].radiusA, SEGMENTS[1].radiusB, SEGMENTS[1].length, 16]}
+              args={[
+                SEGMENTS[1].radiusA,
+                SEGMENTS[1].radiusB,
+                SEGMENTS[1].length,
+                16,
+              ]}
             />
-            <meshStandardMaterial color={colors.main} roughness={0.66} />
+            <meshStandardMaterial color={tailColor} roughness={0.66} />
           </mesh>
           <mesh
             position={[0, SEGMENTS[1].yFin, -SEGMENTS[1].length * 0.5]}
@@ -63,23 +89,29 @@ export default function Tail({ colors }: TailProps) {
           >
             <sphereGeometry args={[0.14, 14, 14]} />
             <meshStandardMaterial
-              color={colors.dark}
+              color={finColor}
               transparent
               opacity={0.7}
-              emissive={colors.sparkleColor ?? colors.light}
-              emissiveIntensity={0.45}
+              emissive={finColor}
+              emissiveIntensity={glow * 0.4}
             />
           </mesh>
 
+          {/* Segment 2 */}
           <group position={[0, 0, -SEGMENTS[1].length + 0.03]} ref={refs[2]}>
             <mesh
               position={[0, 0, -SEGMENTS[2].length * 0.5]}
               rotation={[Math.PI / 2, 0, 0]}
             >
               <cylinderGeometry
-                args={[SEGMENTS[2].radiusA, SEGMENTS[2].radiusB, SEGMENTS[2].length, 14]}
+                args={[
+                  SEGMENTS[2].radiusA,
+                  SEGMENTS[2].radiusB,
+                  SEGMENTS[2].length,
+                  14,
+                ]}
               />
-              <meshStandardMaterial color={colors.main} roughness={0.66} />
+              <meshStandardMaterial color={tailColor} roughness={0.66} />
             </mesh>
             <mesh
               position={[0, SEGMENTS[2].yFin, -SEGMENTS[2].length * 0.5]}
@@ -87,33 +119,42 @@ export default function Tail({ colors }: TailProps) {
             >
               <sphereGeometry args={[0.12, 14, 14]} />
               <meshStandardMaterial
-                color={colors.dark}
+                color={finColor}
                 transparent
                 opacity={0.72}
-                emissive={colors.sparkleColor ?? colors.light}
-                emissiveIntensity={0.45}
+                emissive={finColor}
+                emissiveIntensity={glow * 0.4}
               />
             </mesh>
 
+            {/* Segment 3 & Final Tail Tip */}
             <group position={[0, 0, -SEGMENTS[2].length + 0.03]} ref={refs[3]}>
               <mesh
                 position={[0, 0, -SEGMENTS[3].length * 0.5]}
                 rotation={[Math.PI / 2, 0, 0]}
               >
                 <cylinderGeometry
-                  args={[SEGMENTS[3].radiusA, SEGMENTS[3].radiusB, SEGMENTS[3].length, 12]}
+                  args={[
+                    SEGMENTS[3].radiusA,
+                    SEGMENTS[3].radiusB,
+                    SEGMENTS[3].length,
+                    12,
+                  ]}
                 />
-                <meshStandardMaterial color={colors.main} roughness={0.66} />
+                <meshStandardMaterial color={tailColor} roughness={0.66} />
               </mesh>
-              <mesh position={[0, 0, -SEGMENTS[3].length - 0.1]} scale={[0.1, 0.95, 2.2]}>
+              <mesh
+                position={[0, 0, -SEGMENTS[3].length - 0.1]}
+                scale={[0.1, 0.95, 2.2]}
+              >
                 <sphereGeometry args={[0.18, 16, 16]} />
                 <meshStandardMaterial
-                  color={colors.dark}
+                  color={finColor}
                   transparent
                   opacity={0.76}
                   roughness={0.62}
-                  emissive={colors.sparkleColor ?? colors.light}
-                  emissiveIntensity={0.55}
+                  emissive={finColor}
+                  emissiveIntensity={glow * 0.5}
                 />
               </mesh>
             </group>

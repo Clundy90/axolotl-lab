@@ -8,7 +8,7 @@ import type {
   DecorationCategory,
   DecorationType,
 } from "../types/aquarium";
-import { AXOLOTL_COLORS } from "../components/visuals/Axolotl/AxolotlStyles";
+import { AXOLOTL_COLORS } from "../constants/colors";
 import { SUBSTRATE_TYPES } from "../components/visuals/Environment/Substrate";
 
 const MAX_DECORATIONS = 20;
@@ -17,53 +17,47 @@ const THEME_PRESETS = ["Bubblegum", "Cosmo", "Deep Sea"] as const;
 
 /**
  * useAquariumLogic Hook
- * Refined [2026-05-04]
- * - Added dual-feeding logic for standard Food and special Treats.
- * - Ensures mood resets to "chill" to prevent Axolotl from getting stuck.
+ * Refined [2026-05-07]
+ *
+ * Manages the state and business logic for the axolotl sandbox.
+ * - Handles modular color updates for specific body parts (fins, toes, gills, etc.)
+ * - Manages feeding physics/logic and environmental decorations.
+ * - Controls lighting and substrate cycles.
  */
-
 export function useAquariumLogic() {
+  // --- FEEDING & MOOD STATE ---
   const [foods, setFoods] = useState<FeedItem[]>([]);
   const [treats, setTreats] = useState<FeedItem[]>([]);
   const [snackCount, setSnackCount] = useState(0);
   const [mood, setMood] = useState<AxolotlMood>("chill");
+
+  // --- ENVIRONMENT STATE ---
   const [lightMode, setLightMode] = useState<LightMode>("day");
+  const [showGrass, setShowGrass] = useState(true);
+  const [substrate, setSubstrate] =
+    useState<keyof typeof SUBSTRATE_TYPES>("gravel");
+
+  // Decorations collection (furniture and foliage)
+  const [decorations, setDecorations] = useState<DecorationItem[]>([]);
+
+  // --- COLOR & PALETTE STATE ---
   const [colorIndex, setColorIndex] = useState(0);
   const [isCustomPalette, setIsCustomPalette] = useState(false);
+
+  // Initialize custom palette based on the first preset
   const [customPalette, setCustomPalette] = useState<ColorPalette>({
     ...AXOLOTL_COLORS[0],
     name: "Custom",
   });
-  const [showGrass, setShowGrass] = useState(true);
-  const [substrate, setSubstrate] =
-    useState<keyof typeof SUBSTRATE_TYPES>("gravel");
-  const [decorations, setDecorations] = useState<DecorationItem[]>([
-    {
-      id: 101,
-      type: "shell",
-      category: "decor",
-      position: [-2.8, -2.22, 1.1],
-      scale: 1.05,
-    },
-    {
-      id: 102,
-      type: "castle",
-      category: "furniture",
-      position: [2.4, -2.12, -0.6],
-      scale: 1.55,
-    },
-    {
-      id: 103,
-      type: "bubbleRing",
-      category: "decor",
-      position: [0.5, -1.9, 1.6],
-      scale: 1.0,
-    },
-  ]);
 
+  // Derived current color based on user selection toggle
   const currentColor: ColorPalette = isCustomPalette
     ? customPalette
     : AXOLOTL_COLORS[colorIndex];
+
+  // --- FEEDING LOGIC ---
+
+  /** Generates a new feed item with randomized horizontal drift */
   const nextFeedItem = (spawnY: number): FeedItem => ({
     id: Date.now() + Math.floor(Math.random() * 10000),
     spawnX: (Math.random() - 0.5) * 0.15,
@@ -71,18 +65,15 @@ export function useAquariumLogic() {
     spawnZ: 2.0 + (Math.random() - 0.5) * 0.06,
   });
 
-  // Standard feeding: Flakes
   const handleFeed = useCallback(() => {
     setFoods((prev) => [...prev, nextFeedItem(2.95)]);
   }, []);
 
-  // Special feeding: Worm Treat
   const handleDropTreat = useCallback(() => {
     const newId = nextFeedItem(2.6);
     setTreats((prev) => [...prev, newId]);
     setMood("excited");
-
-    // Reset mood to "chill" after 4 seconds to resume normal swimming
+    // Revert mood after a short delay
     setTimeout(() => setMood("chill"), 4000);
   }, []);
 
@@ -106,6 +97,9 @@ export function useAquariumLogic() {
     setTreats((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
+  // --- DECORATION LOGIC ---
+
+  /** Adds a new piece of furniture or foliage to the tank */
   const addDecoration = useCallback((type: DecorationType) => {
     setDecorations((prev) => {
       if (prev.length >= MAX_DECORATIONS) return prev;
@@ -115,10 +109,13 @@ export function useAquariumLogic() {
       const category: DecorationCategory = FURNITURE_TYPES.includes(type)
         ? "furniture"
         : "decor";
+
+      // Dynamic scaling based on category
       const scale =
         category === "furniture"
           ? 1.45 + Math.random() * 0.35
           : 0.95 + Math.random() * 0.25;
+
       return [...prev, { id, type, category, position: [x, -2.2, z], scale }];
     });
   }, []);
@@ -136,27 +133,44 @@ export function useAquariumLogic() {
     setDecorations((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
+  // --- COLOR LOGIC ---
+
+  /** Selects a preset color theme and disables custom overrides */
   const selectColor = useCallback((index: number) => {
     if (index < 0 || index >= AXOLOTL_COLORS.length) return;
     setIsCustomPalette(false);
     setColorIndex(index);
   }, []);
 
+  /**
+   * updateCustomPalette
+   * Supports specific body part overrides: body, gills, fins, tail, legs, toes, eyes.
+   * Also handles numeric glowIntensity via the same setter logic.
+   */
   const updateCustomPalette = useCallback(
-    (field: "main" | "light" | "dark", value: string) => {
-      setCustomPalette((prev) => ({ ...prev, [field]: value, name: "Custom" }));
+    (field: keyof Omit<ColorPalette, "name">, value: string | number) => {
+      setCustomPalette((prev) => ({
+        ...prev,
+        [field]: value,
+        name: "Custom",
+      }));
       setIsCustomPalette(true);
     },
     [],
   );
 
-  const applyThemePreset = useCallback((name: (typeof THEME_PRESETS)[number]) => {
-    const index = AXOLOTL_COLORS.findIndex((theme) => theme.name === name);
-    if (index < 0) return;
-    setColorIndex(index);
-    setIsCustomPalette(false);
-  }, []);
+  /** Maps a named theme string to its corresponding index in AXOLOTL_COLORS */
+  const applyThemePreset = useCallback(
+    (name: (typeof THEME_PRESETS)[number]) => {
+      const index = AXOLOTL_COLORS.findIndex((theme) => theme.name === name);
+      if (index < 0) return;
+      setColorIndex(index);
+      setIsCustomPalette(false);
+    },
+    [],
+  );
 
+  /** Cycles through the available substrate textures */
   const cycleSubstrate = useCallback(() => {
     const keys = Object.keys(
       SUBSTRATE_TYPES,
@@ -166,6 +180,7 @@ export function useAquariumLogic() {
   }, [substrate]);
 
   return {
+    // State
     foods,
     treats,
     decorations,
@@ -174,12 +189,16 @@ export function useAquariumLogic() {
     lightMode,
     showGrass,
     currentColor,
-    colorOptions: AXOLOTL_COLORS,
-    themePresets: THEME_PRESETS,
     colorIndex,
-    maxDecorations: MAX_DECORATIONS,
     isCustomPalette,
     substrate,
+
+    // Constants / Options
+    colorOptions: AXOLOTL_COLORS,
+    themePresets: THEME_PRESETS,
+    maxDecorations: MAX_DECORATIONS,
+
+    // Handlers
     handleFeed,
     handleDropTreat,
     setMood,
@@ -196,6 +215,11 @@ export function useAquariumLogic() {
     selectColor,
     updateCustomPalette,
     applyThemePreset,
-    cycleColor: () => setColorIndex((c) => (c + 1) % AXOLOTL_COLORS.length),
+
+    /** Cycles through presets while disabling custom mode */
+    cycleColor: () => {
+      setIsCustomPalette(false);
+      setColorIndex((c) => (c + 1) % AXOLOTL_COLORS.length);
+    },
   };
 }

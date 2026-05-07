@@ -7,11 +7,12 @@ import type {
   FoliageType,
   LightMode,
 } from "../../../types/aquarium";
+
 import { DECORATION_OPTIONS } from "../Decorations/DecorationCatalog";
 
 /**
  * Props for the AquariumControls component
- * Includes state and handlers for the axolotl, environment, and UI theme.
+ * Refined [2026-05-07]
  */
 interface AquariumControlsProps {
   petName: string;
@@ -40,8 +41,8 @@ interface AquariumControlsProps {
   onTreat: () => void;
   onAddDecoration: (type: DecorationType) => void;
   onUpdateCustomPalette: (
-    field: "main" | "light" | "dark",
-    value: string,
+    field: keyof Omit<ColorPalette, "name">,
+    value: string | number,
   ) => void;
   onApplyThemePreset: (name: string) => void;
 }
@@ -103,24 +104,34 @@ export default function AquariumControls({
     (item) => item.category === "furniture",
   );
 
+  // Descriptive list for mapping color part pickers
+  const bodyParts = [
+    { id: "body", label: "Body" },
+    { id: "gills", label: "Gills" },
+    { id: "fins", label: "Fins" },
+    { id: "tail", label: "Tail" },
+    { id: "legs", label: "Legs" },
+    { id: "toes", label: "Toes" },
+    { id: "eyes", label: "Eyes" },
+  ] as const;
+
   return (
     <>
-      {/* Dynamic Header for Aquarium Naming */}
+      {/* HEADER: Pet Naming */}
       <div className="title-ribbon">
         <input
           type="text"
           value={petName}
           onChange={(event) => setPetName(event.target.value)}
-          placeholder="Chelsea's Aquarium"
+          placeholder="Name your axolotl"
           className="aquarium-title-input"
           spellCheck={false}
           maxLength={30}
         />
       </div>
 
-      {/* LEFT SIDE: Decoration & Furniture Management */}
+      {/* LEFT PANEL: Decoration Controls */}
       <section className="side-panel left-panel">
-        <p className="side-title">Decorations</p>
         <span className="side-count">
           {decorationCount}/{maxDecorations}
         </span>
@@ -129,7 +140,7 @@ export default function AquariumControls({
         {decorOptions.map((option) => (
           <button
             key={option.type}
-            className={`rainbow-btn side-btn btn-teal`} // Environment/Object category (Teal)
+            className="rainbow-btn side-btn btn-teal"
             disabled={!canAddDecoration}
             onClick={() => onAddDecoration(option.type)}
           >
@@ -142,7 +153,7 @@ export default function AquariumControls({
         {furnitureOptions.map((option) => (
           <button
             key={option.type}
-            className={`rainbow-btn side-btn btn-blue`} // Structural category (Blue)
+            className="rainbow-btn side-btn btn-blue"
             disabled={!canAddDecoration}
             onClick={() => onAddDecoration(option.type)}
           >
@@ -150,7 +161,6 @@ export default function AquariumControls({
           </button>
         ))}
 
-        {/* Delete Mode Toggle: Uses btn-rose as a standout warning color */}
         <button
           className={`rainbow-btn side-btn ${deleteMode ? "btn-rose" : "btn-indigo"}`}
           onClick={() => onSetDeleteMode(!deleteMode)}
@@ -159,14 +169,15 @@ export default function AquariumControls({
         </button>
       </section>
 
-      {/* RIGHT SIDE: Color Lab & Custom Palettes */}
+      {/* RIGHT PANEL: Color Lab */}
       <section className="side-panel right-panel">
         <button
           className="rainbow-btn side-btn btn-teal"
-          onClick={() => setShowColorLab((open) => !open)}
+          onClick={() => setShowColorLab(!showColorLab)}
         >
-          Color Lab {showColorLab ? "^" : "v"}
+          Color Options {showColorLab ? "^" : "v"}
         </button>
+
         {showColorLab && (
           <>
             <div className="theme-preset-list">
@@ -185,34 +196,41 @@ export default function AquariumControls({
             <p className="side-subtitle">
               {isCustomPalette ? "Custom Palette" : "Theme Palette"}
             </p>
+
             <div className="custom-color-list">
-              <label className="color-edit-row">
-                <span>Body</span>
+              {bodyParts.map((part) => (
+                <label key={part.id} className="color-edit-row">
+                  <span>{part.label}</span>
+                  <input
+                    type="color"
+                    value={
+                      currentColor[part.id as keyof ColorPalette] as string
+                    }
+                    onChange={(e) =>
+                      onUpdateCustomPalette(part.id as any, e.target.value)
+                    }
+                  />
+                </label>
+              ))}
+
+              <div className="side-divider" />
+              <label
+                className="color-edit-row"
+                style={{ flexDirection: "column", alignItems: "flex-start" }}
+              >
+                <span>Glow Intensity</span>
                 <input
-                  type="color"
-                  value={currentColor.main}
-                  onChange={(event) =>
-                    onUpdateCustomPalette("main", event.target.value)
-                  }
-                />
-              </label>
-              <label className="color-edit-row">
-                <span>Light</span>
-                <input
-                  type="color"
-                  value={currentColor.light}
-                  onChange={(event) =>
-                    onUpdateCustomPalette("light", event.target.value)
-                  }
-                />
-              </label>
-              <label className="color-edit-row">
-                <span>Dark</span>
-                <input
-                  type="color"
-                  value={currentColor.dark}
-                  onChange={(event) =>
-                    onUpdateCustomPalette("dark", event.target.value)
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="0.1"
+                  style={{ width: "100%" }}
+                  value={currentColor.glowIntensity}
+                  onChange={(e) =>
+                    onUpdateCustomPalette(
+                      "glowIntensity",
+                      parseFloat(e.target.value),
+                    )
                   }
                 />
               </label>
@@ -221,9 +239,8 @@ export default function AquariumControls({
         )}
       </section>
 
-      {/* BOTTOM CENTER: Main Functional Controls */}
+      {/* BOTTOM CENTER BAR: Functional Controls */}
       <section className="main-controls-bar">
-        {/* Care Group: Consolidated to Tropical Blue (Primary Interaction) */}
         <Group title="Care">
           <button onClick={onPet} className="rainbow-btn btn-red">
             Pet
@@ -238,7 +255,6 @@ export default function AquariumControls({
 
         <div className="main-separator" />
 
-        {/* Behavior Group: Consolidated to Deep Sea Purple (Internal State) */}
         <Group title="Behavior">
           <button
             onClick={() => onSetMood("excited")}
@@ -262,7 +278,6 @@ export default function AquariumControls({
 
         <div className="main-separator" />
 
-        {/* Environment Group: Consolidated to Mint/Teal (Global Setting) */}
         <Group title="Environment">
           <button onClick={onToggleLightMode} className="rainbow-btn btn-green">
             {lightMode === "day" ? "Day" : "Night"}
@@ -275,13 +290,12 @@ export default function AquariumControls({
             className="rainbow-btn btn-green"
             disabled={!showGrass}
           >
-            {showGrass ? foliageStyle : "Plants Off"}
+            {showGrass ? foliageStyle : "Off"}
           </button>
         </Group>
 
         <div className="main-separator" />
 
-        {/* Tricks Group: Consolidated to Cyan (Action/Skill) */}
         <Group title="Tricks">
           <button
             onClick={() => onSetTrick("barrelRoll")}

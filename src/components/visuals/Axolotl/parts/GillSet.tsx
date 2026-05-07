@@ -5,10 +5,9 @@ import type { ColorPalette } from "../../../../types/aquarium";
 
 interface GillSetProps {
   side: 1 | -1;
-  colors: ColorPalette;
+  color: string; // Changed from 'colors: ColorPalette' to just 'color: string'
 }
-
-export default function GillSet({ side, colors }: GillSetProps) {
+export default function GillSet({ side, color }: GillSetProps) {
   const refs = [
     useRef<THREE.Group>(null),
     useRef<THREE.Group>(null),
@@ -34,14 +33,13 @@ export default function GillSet({ side, colors }: GillSetProps) {
           <mesh position={[side * 0.1, 0.2, 0]}>
             <capsuleGeometry args={[0.034, 0.32, 8, 8]} />
             <meshStandardMaterial
-              color={colors.dark}
-              emissive={colors.sparkleColor ?? colors.light}
-              emissiveIntensity={colors.glowIntensity ?? 0.8}
+              color={color} // Use the specific gills color
+              roughness={0.76}
             />
           </mesh>
           <mesh position={[side * 0.18, 0.32, 0]}>
             <capsuleGeometry args={[0.02, 0.16, 6, 6]} />
-            <meshStandardMaterial color={colors.dark} roughness={0.65} />
+            <meshStandardMaterial color={color} roughness={0.65} />
           </mesh>
         </group>
       ))}

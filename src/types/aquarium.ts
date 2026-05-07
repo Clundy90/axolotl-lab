@@ -20,11 +20,14 @@ export type DecorationCategory = "decor" | "furniture";
 
 export interface ColorPalette {
   name: string;
-  main: string; // Changed from 'body'
-  light: string; // Changed from 'gills'
-  dark: string; // Changed from 'fins'
-  sparkleColor?: string; // Optional: for extra visual flair
-  glowIntensity?: number; // Optional: for dynamic lighting effects
+  body: string; // Main torso and head
+  gills: string; // The frilly external gills
+  fins: string; // The translucent bits on tail/back (Sparkle!)
+  tail: string; // The solid muscle of the tail
+  legs: string; // The limbs
+  toes: string; // The tips of the feet
+  eyes: string; // The sclera/iris
+  glowIntensity: number;
 }
 
 export interface FeedItem {
