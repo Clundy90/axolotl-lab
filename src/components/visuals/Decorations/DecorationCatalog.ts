@@ -11,36 +11,31 @@ export interface DecorationOption {
 }
 
 export const DECORATION_OPTIONS: DecorationOption[] = [
-  // --- DECOR CATEGORY ---
-  { type: "shell", category: "decor", label: "Shell", colorClass: "btn-teal" },
-  { type: "star", category: "decor", label: "Star", colorClass: "btn-green" },
-  { type: "coral", category: "decor", label: "Coral", colorClass: "btn-teal" },
+  // --- DECOR CATEGORY (Blue & Green Fish) ---
   {
-    type: "bubbleRing",
+    type: "fishBlue",
     category: "decor",
-    label: "Bubble Ring",
-    colorClass: "btn-green",
-  },
-
-  // New Treasure Box Addition
-  {
-    type: "treasureBox",
-    category: "furniture",
-    label: "Treasure",
-    colorClass: "btn-yellow",
-  },
-
-  // --- FURNITURE CATEGORY ---
-  {
-    type: "castle",
-    category: "furniture",
-    label: "Castle",
+    label: "Blue Fish",
     colorClass: "btn-blue",
   },
   {
-    type: "caveHideout",
+    type: "fishGreen",
+    category: "decor",
+    label: "Green Fish",
+    colorClass: "btn-green",
+  },
+
+  // --- FURNITURE CATEGORY (Brown & Orange Fish) ---
+  {
+    type: "fishBrown",
     category: "furniture",
-    label: "Cave",
+    label: "Brown Fish",
     colorClass: "btn-indigo",
+  },
+  {
+    type: "fishOrange",
+    category: "furniture",
+    label: "Orange Fish",
+    colorClass: "btn-yellow",
   },
 ];

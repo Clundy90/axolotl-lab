@@ -3,16 +3,8 @@ import type { ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import type { DecorationItem, DecorationType } from "../../../types/aquarium";
 
-// Importing the visual models from our new separated file
-import {
-  Star,
-  Shell,
-  Castle,
-  Cave,
-  Coral,
-  BubbleRing,
-  TreasureBox,
-} from "./DecorationModels";
+// Import our new 2D sprite models
+import { FishBlue, FishGreen, FishBrown, FishOrange } from "./DecorationModels";
 
 interface DecorationLayerProps {
   items: DecorationItem[];
@@ -33,22 +25,16 @@ function clamp(value: number, min: number, max: number) {
  */
 function DecorationShape({ type }: { type: DecorationType }) {
   switch (type) {
-    case "shell":
-      return <Shell />;
-    case "star":
-      return <Star />;
-    case "castle":
-      return <Castle />;
-    case "caveHideout":
-      return <Cave />;
-    case "coral":
-      return <Coral />;
-    case "bubbleRing":
-      return <BubbleRing />;
-    case "treasureBox":
-      return <TreasureBox />;
+    case "fishBlue":
+      return <FishBlue />;
+    case "fishGreen":
+      return <FishGreen />;
+    case "fishBrown":
+      return <FishBrown />;
+    case "fishOrange":
+      return <FishOrange />;
     default:
-      return <BubbleRing />;
+      return <FishBlue />;
   }
 }
 

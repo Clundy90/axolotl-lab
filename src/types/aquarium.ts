@@ -1,6 +1,6 @@
 /**
  * Aquarium Types & Interfaces
- * Centralized for TDD and cross-component consistency.
+ Centralized for TDD and cross-component consistency.
  */
 
 export type AxolotlMood = "chill" | "excited" | "lazy";
@@ -8,14 +8,14 @@ export type LightMode = "day" | "night";
 export type AxolotlTrick = "none" | "barrelRoll" | "backflip" | "spin";
 export type FoliageType = "grass" | "kelp" | "vines";
 export type FeedType = "food" | "treat";
+
+// Updated to map to the 2D billboard Kenney Fish Pack assets
 export type DecorationType =
-  | "shell"
-  | "star"
-  | "coral"
-  | "bubbleRing"
-  | "castle"
-  | "caveHideout"
-  | "treasureBox";
+  | "fishBlue"
+  | "fishGreen"
+  | "fishBrown"
+  | "fishOrange";
+
 export type DecorationCategory = "decor" | "furniture";
 
 export interface ColorPalette {

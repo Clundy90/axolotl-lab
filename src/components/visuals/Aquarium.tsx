@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ContactShadows, Environment } from "@react-three/drei";
 import { useAquariumLogic } from "../../hooks/useAquariumLogic";
@@ -100,13 +100,18 @@ export default function Aquarium() {
         <Substrate type={logic.substrate} />
         <Foliage visible={logic.showGrass} type={foliageStyle} count={14} />
 
-        {/* Handles placement, movement, and deletion of 3D objects */}
-        <DecorationLayer
-          items={logic.decorations}
-          onMoveDecoration={logic.moveDecoration}
-          deleteMode={deleteMode}
-          onRemoveDecoration={logic.removeDecoration}
-        />
+        {/* Suspense Wrap: Prevents Canvas runtime crash during async GLTF asset fetches.
+          Kenney 3D models will safely mount here instantly upon resolution.
+        */}
+        <Suspense fallback={null}>
+          {/* Handles placement, movement, and deletion of 3D objects */}
+          <DecorationLayer
+            items={logic.decorations}
+            onMoveDecoration={logic.moveDecoration}
+            deleteMode={deleteMode}
+            onRemoveDecoration={logic.removeDecoration}
+          />
+        </Suspense>
 
         {/* Dynamic Food Items */}
         {logic.foods.map((food) => (
