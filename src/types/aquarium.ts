@@ -10,7 +10,12 @@ export type FoliageType = "grass" | "kelp" | "vines";
 export type FeedType = "food" | "treat";
 export type SubstrateType = "gravel" | "sand" | "mud";
 
-export type DecorationType = "castle" | "caveHideout";
+export type DecorationType =
+  | "castle"
+  | "log"
+  | "treasureChest"
+  | "brainCoral"
+  | "seaUrchin";
 export type DecorationCategory = "decor" | "furniture";
 export type BackgroundFishType = "blue" | "green" | "brown" | "orange";
 

@@ -23,7 +23,6 @@ export default function AquariumScene() {
       <BubbleStream />
       <BackgroundFishLayer
         fish={aquarium.backgroundFish}
-        onRemoveFish={aquarium.removeBackgroundFish}
       />
       <Substrate type={aquarium.substrate} />
       <Foliage visible={aquarium.showGrass} type={ui.foliageStyle} count={14} />

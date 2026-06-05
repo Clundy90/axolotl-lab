@@ -37,9 +37,19 @@ export function createDecoration(
   const x = (random() - 0.5) * 7;
   const z = (random() - 0.5) * 4;
   const category: DecorationCategory = "furniture";
-  const scale = 1.2 + random() * 0.25;
+  const scale = 0.85 + random() * 0.18;
 
   return { id, type, category, position: [x, -2.18, z], scale };
+}
+
+export function wrapBackgroundFishX(
+  x: number,
+  direction: 1 | -1,
+  bounds = 7.8,
+) {
+  if (x > bounds) return -bounds;
+  if (x < -bounds) return bounds;
+  return x;
 }
 
 export function createBackgroundFish(

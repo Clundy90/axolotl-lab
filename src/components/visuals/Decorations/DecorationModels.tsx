@@ -1,52 +1,100 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useLoader } from "@react-three/fiber";
+import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
+import * as THREE from "three";
+import type { DecorationType } from "../../../types/aquarium";
 
 /**
- * Handmade furniture models.
+ * Loaded aquarium furniture models.
  * Fish-pack sprites live in the background layer so furniture stays separate.
  */
 
-export function CastleDecoration() {
-  return (
-    <group>
-      <mesh position={[0, 0.28, 0]} castShadow receiveShadow>
-        <boxGeometry args={[1.2, 0.56, 0.72]} />
-        <meshStandardMaterial color="#80624c" roughness={0.8} />
-      </mesh>
-      <mesh position={[-0.5, 0.76, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.34, 0.64, 0.76]} />
-        <meshStandardMaterial color="#725744" roughness={0.82} />
-      </mesh>
-      <mesh position={[0.5, 0.76, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.34, 0.64, 0.76]} />
-        <meshStandardMaterial color="#725744" roughness={0.82} />
-      </mesh>
-      <mesh position={[0, 0.62, 0.37]} castShadow>
-        <boxGeometry args={[0.38, 0.42, 0.04]} />
-        <meshStandardMaterial color="#33261f" roughness={1} />
-      </mesh>
-      <mesh position={[0, 1.12, 0]} castShadow>
-        <coneGeometry args={[0.76, 0.52, 4]} />
-        <meshStandardMaterial color="#5f7f8a" roughness={0.55} />
-      </mesh>
-    </group>
-  );
+const ASSET_ROOTS: Record<DecorationType, string> = {
+  castle: "/Aquarium_Castle_v1_L1.123c68c7e8e7-0239-4852-a01d-384b6747c08d",
+  log: "/Aquarium_Log_v1_L3.123c948711d4-4661-4612-9de0-2f84b67e5d21",
+  treasureChest:
+    "/aquarium_treasure_chest_v1_L2.123c20c98872-e08b-4c2e-bc02-5b3efe215604",
+  brainCoral: "/Brain_Coral_v1_L1.123c952dcd3e-dc3a-41a5-b56e-548475a0de97",
+  seaUrchin:
+    "/Pencil_sea_urchin_V1_L1.123cbeb8e568-4553-4b0a-b574-b4bf263bb74d",
+};
+
+const MODEL_FILES: Record<DecorationType, { obj: string; mtl: string }> = {
+  castle: {
+    obj: "13020_Aquarium_Castle_v1_L1.obj",
+    mtl: "13020_Aquarium_Castle_v1_L1.mtl",
+  },
+  log: {
+    obj: "13021_Aquarium_Log_v1_L3.obj",
+    mtl: "13021_Aquarium_Log_v1_L3.mtl",
+  },
+  treasureChest: {
+    obj: "13019_aquarium_treasure_chest_v1_L2.obj",
+    mtl: "13019_aquarium_treasure_chest_v1_L2.mtl",
+  },
+  brainCoral: {
+    obj: "20941_Brain_Coral_v1_NEW1.obj",
+    mtl: "20941_Brain_Coral_v1_NEW1.mtl",
+  },
+  seaUrchin: {
+    obj: "18765_Pencil_sea_urchin_V1.obj",
+    mtl: "Blank.mtl",
+  },
+};
+
+const MODEL_HEIGHTS: Record<DecorationType, number> = {
+  castle: 2.0,
+  log: 0.72,
+  treasureChest: 0.99,
+  brainCoral: 0.74,
+  seaUrchin: 0.58,
+};
+
+const MODEL_ROTATIONS: Record<DecorationType, [number, number, number]> = {
+  castle: [Math.PI / 2, Math.PI, 0],
+  log: [0, 0, 0],
+  treasureChest: [-Math.PI / 2, 0, 0],
+  brainCoral: [0, 0, 0],
+  seaUrchin: [0, 0, 0],
+};
+
+function normalizeModel(object: THREE.Group, targetHeight: number) {
+  const box = new THREE.Box3().setFromObject(object);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const scale = targetHeight / Math.max(size.y, 0.001);
+
+  object.scale.setScalar(scale);
+  object.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+  object.traverse((child) => {
+    if (child instanceof THREE.Mesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
+
+  return object;
 }
 
-export function CaveHideoutDecoration() {
+export default function DecorationModel({ type }: { type: DecorationType }) {
+  const root = ASSET_ROOTS[type];
+  const files = MODEL_FILES[type];
+  const materials = useLoader(MTLLoader, `${root}/${files.mtl}`);
+  materials.preload();
+
+  const source = useLoader(OBJLoader, `${root}/${files.obj}`, (loader) => {
+    loader.setMaterials(materials);
+  });
+
+  const object = useMemo(
+    () => normalizeModel(source.clone(), MODEL_HEIGHTS[type]),
+    [source, type],
+  );
+
   return (
-    <group>
-      <mesh position={[0, 0.36, 0]} castShadow receiveShadow>
-        <sphereGeometry args={[0.78, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshStandardMaterial color="#61554c" roughness={0.95} />
-      </mesh>
-      <mesh position={[0, 0.18, 0.42]} castShadow>
-        <boxGeometry args={[0.58, 0.42, 0.08]} />
-        <meshStandardMaterial color="#1f1b18" roughness={1} />
-      </mesh>
-      <mesh position={[0, 0.08, 0]} receiveShadow>
-        <cylinderGeometry args={[0.78, 0.86, 0.12, 24]} />
-        <meshStandardMaterial color="#4f463f" roughness={0.95} />
-      </mesh>
+    <group rotation={MODEL_ROTATIONS[type]}>
+      <primitive object={object} />
     </group>
   );
 }

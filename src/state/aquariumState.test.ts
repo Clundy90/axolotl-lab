@@ -7,6 +7,7 @@ import {
   getThemePresetIndex,
   MAX_BACKGROUND_FISH,
   MAX_DECORATIONS,
+  wrapBackgroundFishX,
 } from "./aquariumState";
 
 describe("aquarium state helpers", () => {
@@ -52,5 +53,11 @@ describe("aquarium state helpers", () => {
     expect(fish.position[2]).toBeLessThan(-2.8);
     expect(fish.position[1]).toBeGreaterThan(-1);
     expect(MAX_BACKGROUND_FISH).toBe(12);
+  });
+
+  test("background fish wrap around instead of being destroyed offscreen", () => {
+    expect(wrapBackgroundFishX(8.1, 1)).toBe(-7.8);
+    expect(wrapBackgroundFishX(-8.1, -1)).toBe(7.8);
+    expect(wrapBackgroundFishX(0.5, 1)).toBe(0.5);
   });
 });

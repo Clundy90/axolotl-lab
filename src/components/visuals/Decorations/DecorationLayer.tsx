@@ -3,10 +3,7 @@ import type { ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import type { DecorationItem, DecorationType } from "../../../types/aquarium";
 
-import {
-  CastleDecoration,
-  CaveHideoutDecoration,
-} from "./DecorationModels";
+import DecorationModel from "./DecorationModels";
 
 interface DecorationLayerProps {
   items: DecorationItem[];
@@ -26,14 +23,7 @@ function clamp(value: number, min: number, max: number) {
  * Decides which 3D model to render based on the item type.
  */
 function DecorationShape({ type }: { type: DecorationType }) {
-  switch (type) {
-    case "castle":
-      return <CastleDecoration />;
-    case "caveHideout":
-      return <CaveHideoutDecoration />;
-    default:
-      return <CastleDecoration />;
-  }
+  return <DecorationModel type={type} />;
 }
 
 /**

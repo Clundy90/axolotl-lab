@@ -95,6 +95,13 @@ export default function AquariumControls() {
             + {option.label}
           </button>
         ))}
+        <button
+          className="rainbow-btn side-btn btn-rose"
+          disabled={aquarium.backgroundFish.length === 0}
+          onClick={aquarium.removeLastBackgroundFish}
+        >
+          - Fish
+        </button>
 
         <button
           className={`rainbow-btn side-btn ${ui.deleteMode ? "btn-rose" : "btn-indigo"}`}

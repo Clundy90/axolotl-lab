@@ -18,9 +18,27 @@ export const DECORATION_OPTIONS: DecorationOption[] = [
     colorClass: "btn-blue",
   },
   {
-    type: "caveHideout",
+    type: "log",
     category: "furniture",
-    label: "Cave",
+    label: "Log",
     colorClass: "btn-indigo",
+  },
+  {
+    type: "treasureChest",
+    category: "furniture",
+    label: "Treasure",
+    colorClass: "btn-yellow",
+  },
+  {
+    type: "brainCoral",
+    category: "furniture",
+    label: "Coral",
+    colorClass: "btn-pink",
+  },
+  {
+    type: "seaUrchin",
+    category: "furniture",
+    label: "Urchin",
+    colorClass: "btn-teal",
   },
 ];

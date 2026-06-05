@@ -3,19 +3,13 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { BackgroundFishItem } from "../../../types/aquarium";
 import BackgroundFishSprite from "./BackgroundFishModels";
+import { wrapBackgroundFishX } from "../../../state/aquariumState";
 
 interface BackgroundFishLayerProps {
   fish: BackgroundFishItem[];
-  onRemoveFish: (id: number) => void;
 }
 
-function SwimmingFish({
-  fish,
-  onRemoveFish,
-}: {
-  fish: BackgroundFishItem;
-  onRemoveFish: (id: number) => void;
-}) {
+function SwimmingFish({ fish }: { fish: BackgroundFishItem }) {
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((state, delta) => {
@@ -23,13 +17,12 @@ function SwimmingFish({
 
     const nextX =
       groupRef.current.position.x + fish.direction * fish.speed * delta;
-    groupRef.current.position.x = nextX;
+    groupRef.current.position.x = wrapBackgroundFishX(
+      nextX,
+      fish.direction,
+    );
     groupRef.current.position.y =
       fish.position[1] + Math.sin(state.clock.elapsedTime * 1.2 + fish.id) * 0.08;
-
-    if (nextX > 7.8 || nextX < -7.8) {
-      onRemoveFish(fish.id);
-    }
   });
 
   return (
@@ -41,12 +34,11 @@ function SwimmingFish({
 
 export default function BackgroundFishLayer({
   fish,
-  onRemoveFish,
 }: BackgroundFishLayerProps) {
   return (
     <group>
       {fish.map((item) => (
-        <SwimmingFish key={item.id} fish={item} onRemoveFish={onRemoveFish} />
+        <SwimmingFish key={item.id} fish={item} />
       ))}
     </group>
   );

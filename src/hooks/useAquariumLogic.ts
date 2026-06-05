@@ -126,6 +126,10 @@ export function useAquariumLogic() {
     setBackgroundFish((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
+  const removeLastBackgroundFish = useCallback(() => {
+    setBackgroundFish((prev) => prev.slice(0, -1));
+  }, []);
+
   const moveDecoration = useCallback(
     (id: number, position: [number, number, number]) => {
       setDecorations((prev) =>
@@ -219,6 +223,7 @@ export function useAquariumLogic() {
     addDecoration,
     addBackgroundFish,
     removeBackgroundFish,
+    removeLastBackgroundFish,
     moveDecoration,
     removeDecoration,
     cycleSubstrate,
