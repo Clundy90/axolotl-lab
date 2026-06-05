@@ -1,60 +1,52 @@
 import React from "react";
-import { useTexture } from "@react-three/drei";
-import * as THREE from "three";
 
 /**
- * 2D BILLBOARD DECORATION MODELS
- * Loads 2D vector/png fish assets from Kenney's fish pack as textures
- * and applies them to flat 3D planes inside the aquarium canvas.
+ * Handmade furniture models.
+ * Fish-pack sprites live in the background layer so furniture stays separate.
  */
 
-// Preload the images to prevent flickering when dropping them into the scene
-useTexture.preload("/textures/fish_blue.svg");
-useTexture.preload("/textures/fish_green.svg");
-useTexture.preload("/textures/fish_brown.svg");
-useTexture.preload("/textures/fish_orange.svg");
-
-interface FishSpriteProps {
-  url: string;
-  scale?: [number, number, number];
-}
-
-/**
- * Shared reusable wrapper component for rendering a 2D asset in 3D space.
- */
-function FishSprite({ url, scale = [1, 1, 1] }: FishSpriteProps) {
-  const texture = useTexture(url);
-
-  // Ensures crisp pixel boundaries if using PNGs, or smooth rendering for SVGs
-  texture.minFilter = THREE.LinearFilter;
-
+export function CastleDecoration() {
   return (
-    <mesh scale={scale}>
-      {/* A flat plane to display our 2D texture */}
-      <planeGeometry args={[1, 1]} />
-      <meshStandardMaterial
-        map={texture}
-        transparent={true}
-        side={THREE.DoubleSide} // Visible from front and back
-        roughness={0.6}
-        alphaTest={0.05} // Cleans up fuzzy pixel borders on transparent gaps
-      />
-    </mesh>
+    <group>
+      <mesh position={[0, 0.28, 0]} castShadow receiveShadow>
+        <boxGeometry args={[1.2, 0.56, 0.72]} />
+        <meshStandardMaterial color="#80624c" roughness={0.8} />
+      </mesh>
+      <mesh position={[-0.5, 0.76, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.34, 0.64, 0.76]} />
+        <meshStandardMaterial color="#725744" roughness={0.82} />
+      </mesh>
+      <mesh position={[0.5, 0.76, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.34, 0.64, 0.76]} />
+        <meshStandardMaterial color="#725744" roughness={0.82} />
+      </mesh>
+      <mesh position={[0, 0.62, 0.37]} castShadow>
+        <boxGeometry args={[0.38, 0.42, 0.04]} />
+        <meshStandardMaterial color="#33261f" roughness={1} />
+      </mesh>
+      <mesh position={[0, 1.12, 0]} castShadow>
+        <coneGeometry args={[0.76, 0.52, 4]} />
+        <meshStandardMaterial color="#5f7f8a" roughness={0.55} />
+      </mesh>
+    </group>
   );
 }
 
-export function FishBlue() {
-  return <FishSprite url="/textures/fish_blue.svg" scale={[1.2, 0.9, 1]} />;
-}
-
-export function FishGreen() {
-  return <FishSprite url="/textures/fish_green.svg" scale={[1.2, 0.9, 1]} />;
-}
-
-export function FishBrown() {
-  return <FishSprite url="/textures/fish_brown.svg" scale={[1.3, 1.0, 1]} />;
-}
-
-export function FishOrange() {
-  return <FishSprite url="/textures/fish_orange.svg" scale={[1.1, 0.8, 1]} />;
+export function CaveHideoutDecoration() {
+  return (
+    <group>
+      <mesh position={[0, 0.36, 0]} castShadow receiveShadow>
+        <sphereGeometry args={[0.78, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial color="#61554c" roughness={0.95} />
+      </mesh>
+      <mesh position={[0, 0.18, 0.42]} castShadow>
+        <boxGeometry args={[0.58, 0.42, 0.08]} />
+        <meshStandardMaterial color="#1f1b18" roughness={1} />
+      </mesh>
+      <mesh position={[0, 0.08, 0]} receiveShadow>
+        <cylinderGeometry args={[0.78, 0.86, 0.12, 24]} />
+        <meshStandardMaterial color="#4f463f" roughness={0.95} />
+      </mesh>
+    </group>
+  );
 }

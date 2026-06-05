@@ -11,31 +11,16 @@ export interface DecorationOption {
 }
 
 export const DECORATION_OPTIONS: DecorationOption[] = [
-  // --- DECOR CATEGORY (Blue & Green Fish) ---
   {
-    type: "fishBlue",
-    category: "decor",
-    label: "Blue Fish",
+    type: "castle",
+    category: "furniture",
+    label: "Castle",
     colorClass: "btn-blue",
   },
   {
-    type: "fishGreen",
-    category: "decor",
-    label: "Green Fish",
-    colorClass: "btn-green",
-  },
-
-  // --- FURNITURE CATEGORY (Brown & Orange Fish) ---
-  {
-    type: "fishBrown",
+    type: "caveHideout",
     category: "furniture",
-    label: "Brown Fish",
+    label: "Cave",
     colorClass: "btn-indigo",
-  },
-  {
-    type: "fishOrange",
-    category: "furniture",
-    label: "Orange Fish",
-    colorClass: "btn-yellow",
   },
 ];

@@ -1,19 +1,24 @@
 import { useState, useCallback } from "react";
 import type {
   AxolotlMood,
+  BackgroundFishType,
   LightMode,
   ColorPalette,
   FeedItem,
   DecorationItem,
-  DecorationCategory,
   DecorationType,
 } from "../types/aquarium";
 import { AXOLOTL_COLORS } from "../constants/colors";
 import { SUBSTRATE_TYPES } from "../components/visuals/Environment/Substrate";
-
-const MAX_DECORATIONS = 20;
-const FURNITURE_TYPES: DecorationType[] = ["castle", "caveHideout"];
-const THEME_PRESETS = ["Bubblegum", "Cosmo", "Deep Sea"] as const;
+import {
+  createBackgroundFish,
+  createCustomPalette,
+  createDecoration,
+  getThemePresetIndex,
+  MAX_BACKGROUND_FISH,
+  MAX_DECORATIONS,
+  THEME_PRESETS,
+} from "../state/aquariumState";
 
 /**
  * useAquariumLogic Hook
@@ -39,6 +44,9 @@ export function useAquariumLogic() {
 
   // Decorations collection (furniture and foliage)
   const [decorations, setDecorations] = useState<DecorationItem[]>([]);
+  const [backgroundFish, setBackgroundFish] = useState(
+    () => [createBackgroundFish("blue"), createBackgroundFish("green")],
+  );
 
   // --- COLOR & PALETTE STATE ---
   const [colorIndex, setColorIndex] = useState(0);
@@ -103,21 +111,19 @@ export function useAquariumLogic() {
   const addDecoration = useCallback((type: DecorationType) => {
     setDecorations((prev) => {
       if (prev.length >= MAX_DECORATIONS) return prev;
-      const id = Date.now() + Math.floor(Math.random() * 10000);
-      const x = (Math.random() - 0.5) * 7;
-      const z = (Math.random() - 0.5) * 4;
-      const category: DecorationCategory = FURNITURE_TYPES.includes(type)
-        ? "furniture"
-        : "decor";
-
-      // Dynamic scaling based on category
-      const scale =
-        category === "furniture"
-          ? 1.45 + Math.random() * 0.35
-          : 0.95 + Math.random() * 0.25;
-
-      return [...prev, { id, type, category, position: [x, -2.2, z], scale }];
+      return [...prev, createDecoration(type)];
     });
+  }, []);
+
+  const addBackgroundFish = useCallback((type: BackgroundFishType) => {
+    setBackgroundFish((prev) => {
+      if (prev.length >= MAX_BACKGROUND_FISH) return prev;
+      return [...prev, createBackgroundFish(type)];
+    });
+  }, []);
+
+  const removeBackgroundFish = useCallback((id: number) => {
+    setBackgroundFish((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
   const moveDecoration = useCallback(
@@ -149,22 +155,22 @@ export function useAquariumLogic() {
    */
   const updateCustomPalette = useCallback(
     (field: keyof Omit<ColorPalette, "name">, value: string | number) => {
-      setCustomPalette((prev) => ({
-        ...prev,
-        [field]: value,
-        name: "Custom",
-      }));
+      const basePalette = isCustomPalette
+        ? customPalette
+        : AXOLOTL_COLORS[colorIndex];
+      setCustomPalette(createCustomPalette(basePalette, field, value));
       setIsCustomPalette(true);
     },
-    [],
+    [colorIndex, customPalette, isCustomPalette],
   );
 
   /** Maps a named theme string to its corresponding index in AXOLOTL_COLORS */
   const applyThemePreset = useCallback(
     (name: (typeof THEME_PRESETS)[number]) => {
-      const index = AXOLOTL_COLORS.findIndex((theme) => theme.name === name);
+      const index = getThemePresetIndex(name);
       if (index < 0) return;
       setColorIndex(index);
+      setCustomPalette({ ...AXOLOTL_COLORS[index], name: "Custom" });
       setIsCustomPalette(false);
     },
     [],
@@ -184,6 +190,7 @@ export function useAquariumLogic() {
     foods,
     treats,
     decorations,
+    backgroundFish,
     snackCount,
     mood,
     lightMode,
@@ -197,6 +204,7 @@ export function useAquariumLogic() {
     colorOptions: AXOLOTL_COLORS,
     themePresets: THEME_PRESETS,
     maxDecorations: MAX_DECORATIONS,
+    maxBackgroundFish: MAX_BACKGROUND_FISH,
 
     // Handlers
     handleFeed,
@@ -209,6 +217,8 @@ export function useAquariumLogic() {
     missFood,
     missTreat,
     addDecoration,
+    addBackgroundFish,
+    removeBackgroundFish,
     moveDecoration,
     removeDecoration,
     cycleSubstrate,

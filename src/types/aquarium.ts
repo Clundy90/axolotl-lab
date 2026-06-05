@@ -8,15 +8,11 @@ export type LightMode = "day" | "night";
 export type AxolotlTrick = "none" | "barrelRoll" | "backflip" | "spin";
 export type FoliageType = "grass" | "kelp" | "vines";
 export type FeedType = "food" | "treat";
+export type SubstrateType = "gravel" | "sand" | "mud";
 
-// Updated to map to the 2D billboard Kenney Fish Pack assets
-export type DecorationType =
-  | "fishBlue"
-  | "fishGreen"
-  | "fishBrown"
-  | "fishOrange";
-
+export type DecorationType = "castle" | "caveHideout";
 export type DecorationCategory = "decor" | "furniture";
+export type BackgroundFishType = "blue" | "green" | "brown" | "orange";
 
 export interface ColorPalette {
   name: string;
@@ -45,10 +41,20 @@ export interface DecorationItem {
   scale: number;
 }
 
+export interface BackgroundFishItem {
+  id: number;
+  type: BackgroundFishType;
+  position: [number, number, number];
+  speed: number;
+  scale: number;
+  direction: 1 | -1;
+}
+
 export interface AquariumState {
   foods: FeedItem[];
   treats: FeedItem[];
   decorations: DecorationItem[];
+  backgroundFish: BackgroundFishItem[];
   mood: AxolotlMood;
   lightMode: LightMode;
   showGrass: boolean;

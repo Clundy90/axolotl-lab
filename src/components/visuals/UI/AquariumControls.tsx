@@ -1,51 +1,10 @@
 import React, { useState } from "react";
-import type {
-  AxolotlMood,
-  AxolotlTrick,
-  ColorPalette,
-  DecorationType,
-  FoliageType,
-  LightMode,
-} from "../../../types/aquarium";
+import type { ColorPalette } from "../../../types/aquarium";
 
 import { DECORATION_OPTIONS } from "../Decorations/DecorationCatalog";
-
-/**
- * Props for the AquariumControls component
- * Refined [2026-05-07]
- */
-interface AquariumControlsProps {
-  petName: string;
-  setPetName: (name: string) => void;
-  mood: AxolotlMood;
-  lightMode: LightMode;
-  substrate: string;
-  foliageStyle: FoliageType;
-  showGrass: boolean;
-  trick: AxolotlTrick;
-  canAddDecoration: boolean;
-  decorationCount: number;
-  maxDecorations: number;
-  deleteMode: boolean;
-  currentColor: ColorPalette;
-  isCustomPalette: boolean;
-  themePresets: readonly string[];
-  onSetDeleteMode: (value: boolean) => void;
-  onSetMood: (mood: AxolotlMood) => void;
-  onToggleLightMode: () => void;
-  onCycleSubstrate: () => void;
-  onCycleFoliage: () => void;
-  onSetTrick: (trick: AxolotlTrick) => void;
-  onPet: () => void;
-  onFeed: () => void;
-  onTreat: () => void;
-  onAddDecoration: (type: DecorationType) => void;
-  onUpdateCustomPalette: (
-    field: keyof Omit<ColorPalette, "name">,
-    value: string | number,
-  ) => void;
-  onApplyThemePreset: (name: string) => void;
-}
+import { BACKGROUND_FISH_OPTIONS } from "../BackgroundFish/BackgroundFishCatalog";
+import { useAquarium } from "../../../context/AquariumContext";
+import { useAquariumUi } from "../../../context/AquariumUiContext";
 
 /**
  * Helper component for grouping UI buttons into logical categories.
@@ -65,41 +24,15 @@ function Group({
   );
 }
 
-export default function AquariumControls({
-  petName,
-  setPetName,
-  mood,
-  lightMode,
-  substrate,
-  foliageStyle,
-  showGrass,
-  trick,
-  canAddDecoration,
-  decorationCount,
-  maxDecorations,
-  deleteMode,
-  currentColor,
-  isCustomPalette,
-  themePresets,
-  onSetDeleteMode,
-  onSetMood,
-  onToggleLightMode,
-  onCycleSubstrate,
-  onCycleFoliage,
-  onSetTrick,
-  onPet,
-  onFeed,
-  onTreat,
-  onAddDecoration,
-  onUpdateCustomPalette,
-  onApplyThemePreset,
-}: AquariumControlsProps) {
+export default function AquariumControls() {
+  const aquarium = useAquarium();
+  const ui = useAquariumUi();
   const [showColorLab, setShowColorLab] = useState(true);
 
-  // Categorize decorations for side-panel organization
-  const decorOptions = DECORATION_OPTIONS.filter(
-    (item) => item.category === "decor",
-  );
+  const canAddDecoration =
+    aquarium.decorations.length < aquarium.maxDecorations;
+  const canAddBackgroundFish =
+    aquarium.backgroundFish.length < aquarium.maxBackgroundFish;
   const furnitureOptions = DECORATION_OPTIONS.filter(
     (item) => item.category === "furniture",
   );
@@ -113,7 +46,7 @@ export default function AquariumControls({
     { id: "legs", label: "Legs" },
     { id: "toes", label: "Toes" },
     { id: "eyes", label: "Eyes" },
-  ] as const;
+  ] satisfies { id: keyof Omit<ColorPalette, "name" | "glowIntensity">; label: string }[];
 
   return (
     <>
@@ -121,8 +54,8 @@ export default function AquariumControls({
       <div className="title-ribbon">
         <input
           type="text"
-          value={petName}
-          onChange={(event) => setPetName(event.target.value)}
+          value={ui.petName}
+          onChange={(event) => ui.setPetName(event.target.value)}
           placeholder="Name your axolotl"
           className="aquarium-title-input"
           spellCheck={false}
@@ -133,39 +66,41 @@ export default function AquariumControls({
       {/* LEFT PANEL: Decoration Controls */}
       <section className="side-panel left-panel">
         <span className="side-count">
-          {decorationCount}/{maxDecorations}
+          Furniture {aquarium.decorations.length}/{aquarium.maxDecorations}
         </span>
-
-        <p className="side-subtitle">Decor</p>
-        {decorOptions.map((option) => (
+        <p className="side-subtitle">Furniture</p>
+        {furnitureOptions.map((option) => (
           <button
             key={option.type}
-            className="rainbow-btn side-btn btn-teal"
+            className={`rainbow-btn side-btn ${option.colorClass}`}
             disabled={!canAddDecoration}
-            onClick={() => onAddDecoration(option.type)}
+            onClick={() => aquarium.addDecoration(option.type)}
           >
             + {option.label}
           </button>
         ))}
 
         <div className="side-divider" />
-        <p className="side-subtitle">Furniture</p>
-        {furnitureOptions.map((option) => (
+        <span className="side-count">
+          Fish {aquarium.backgroundFish.length}/{aquarium.maxBackgroundFish}
+        </span>
+        <p className="side-subtitle">Background Fish</p>
+        {BACKGROUND_FISH_OPTIONS.map((option) => (
           <button
             key={option.type}
-            className="rainbow-btn side-btn btn-blue"
-            disabled={!canAddDecoration}
-            onClick={() => onAddDecoration(option.type)}
+            className={`rainbow-btn side-btn ${option.colorClass}`}
+            disabled={!canAddBackgroundFish}
+            onClick={() => aquarium.addBackgroundFish(option.type)}
           >
             + {option.label}
           </button>
         ))}
 
         <button
-          className={`rainbow-btn side-btn ${deleteMode ? "btn-rose" : "btn-indigo"}`}
-          onClick={() => onSetDeleteMode(!deleteMode)}
+          className={`rainbow-btn side-btn ${ui.deleteMode ? "btn-rose" : "btn-indigo"}`}
+          onClick={() => ui.setDeleteMode(!ui.deleteMode)}
         >
-          {deleteMode ? "Done Deleting" : "Delete Mode"}
+          {ui.deleteMode ? "Done Deleting" : "Delete Mode"}
         </button>
       </section>
 
@@ -181,11 +116,11 @@ export default function AquariumControls({
         {showColorLab && (
           <>
             <div className="theme-preset-list">
-              {themePresets.map((name) => (
+              {aquarium.themePresets.map((name) => (
                 <button
                   key={name}
                   className="rainbow-btn side-btn btn-blue"
-                  onClick={() => onApplyThemePreset(name)}
+                  onClick={() => aquarium.applyThemePreset(name)}
                 >
                   {name}
                 </button>
@@ -194,7 +129,7 @@ export default function AquariumControls({
 
             <div className="side-divider" />
             <p className="side-subtitle">
-              {isCustomPalette ? "Custom Palette" : "Theme Palette"}
+              {aquarium.isCustomPalette ? "Custom Palette" : "Theme Palette"}
             </p>
 
             <div className="custom-color-list">
@@ -203,11 +138,9 @@ export default function AquariumControls({
                   <span>{part.label}</span>
                   <input
                     type="color"
-                    value={
-                      currentColor[part.id as keyof ColorPalette] as string
-                    }
+                    value={aquarium.currentColor[part.id]}
                     onChange={(e) =>
-                      onUpdateCustomPalette(part.id as any, e.target.value)
+                      aquarium.updateCustomPalette(part.id, e.target.value)
                     }
                   />
                 </label>
@@ -225,9 +158,9 @@ export default function AquariumControls({
                   max="2"
                   step="0.1"
                   style={{ width: "100%" }}
-                  value={currentColor.glowIntensity}
+                  value={aquarium.currentColor.glowIntensity}
                   onChange={(e) =>
-                    onUpdateCustomPalette(
+                    aquarium.updateCustomPalette(
                       "glowIntensity",
                       parseFloat(e.target.value),
                     )
@@ -242,13 +175,19 @@ export default function AquariumControls({
       {/* BOTTOM CENTER BAR: Functional Controls */}
       <section className="main-controls-bar">
         <Group title="Care">
-          <button onClick={onPet} className="rainbow-btn btn-red">
+          <button onClick={ui.petAxolotl} className="rainbow-btn btn-red">
             Pet
           </button>
-          <button onClick={onFeed} className="rainbow-btn btn-orange">
+          <button
+            onClick={aquarium.handleFeed}
+            className="rainbow-btn btn-orange"
+          >
             Feed
           </button>
-          <button onClick={onTreat} className="rainbow-btn btn-yellow">
+          <button
+            onClick={aquarium.handleDropTreat}
+            className="rainbow-btn btn-yellow"
+          >
             Treat
           </button>
         </Group>
@@ -257,20 +196,20 @@ export default function AquariumControls({
 
         <Group title="Behavior">
           <button
-            onClick={() => onSetMood("excited")}
-            className={`rainbow-btn ${mood === "excited" ? "btn-pink" : "btn-purple"}`}
+            onClick={() => aquarium.setMood("excited")}
+            className={`rainbow-btn ${aquarium.mood === "excited" ? "btn-pink" : "btn-purple"}`}
           >
             Excited
           </button>
           <button
-            onClick={() => onSetMood("chill")}
-            className={`rainbow-btn ${mood === "chill" ? "btn-indigo" : "btn-purple"}`}
+            onClick={() => aquarium.setMood("chill")}
+            className={`rainbow-btn ${aquarium.mood === "chill" ? "btn-indigo" : "btn-purple"}`}
           >
             Chill
           </button>
           <button
-            onClick={() => onSetMood("lazy")}
-            className={`rainbow-btn ${mood === "lazy" ? "btn-purple" : "btn-indigo"}`}
+            onClick={() => aquarium.setMood("lazy")}
+            className={`rainbow-btn ${aquarium.mood === "lazy" ? "btn-purple" : "btn-indigo"}`}
           >
             Lazy
           </button>
@@ -279,18 +218,28 @@ export default function AquariumControls({
         <div className="main-separator" />
 
         <Group title="Environment">
-          <button onClick={onToggleLightMode} className="rainbow-btn btn-green">
-            {lightMode === "day" ? "Day" : "Night"}
-          </button>
-          <button onClick={onCycleSubstrate} className="rainbow-btn btn-teal">
-            {substrate}
+          <button
+            onClick={() =>
+              aquarium.setLightMode((mode) =>
+                mode === "day" ? "night" : "day",
+              )
+            }
+            className="rainbow-btn btn-green"
+          >
+            {aquarium.lightMode === "day" ? "Day" : "Night"}
           </button>
           <button
-            onClick={onCycleFoliage}
-            className="rainbow-btn btn-green"
-            disabled={!showGrass}
+            onClick={aquarium.cycleSubstrate}
+            className="rainbow-btn btn-teal"
           >
-            {showGrass ? foliageStyle : "Off"}
+            {aquarium.substrate}
+          </button>
+          <button
+            onClick={ui.cycleFoliage}
+            className="rainbow-btn btn-green"
+            disabled={!aquarium.showGrass}
+          >
+            {aquarium.showGrass ? ui.foliageStyle : "Off"}
           </button>
         </Group>
 
@@ -298,22 +247,22 @@ export default function AquariumControls({
 
         <Group title="Tricks">
           <button
-            onClick={() => onSetTrick("barrelRoll")}
-            disabled={trick !== "none"}
+            onClick={() => ui.setTrick("barrelRoll")}
+            disabled={ui.trick !== "none"}
             className="rainbow-btn btn-blue"
           >
             Roll
           </button>
           <button
-            onClick={() => onSetTrick("backflip")}
-            disabled={trick !== "none"}
+            onClick={() => ui.setTrick("backflip")}
+            disabled={ui.trick !== "none"}
             className="rainbow-btn btn-blue"
           >
             Flip
           </button>
           <button
-            onClick={() => onSetTrick("spin")}
-            disabled={trick !== "none"}
+            onClick={() => ui.setTrick("spin")}
+            disabled={ui.trick !== "none"}
             className="rainbow-btn btn-blue"
           >
             Spin
