@@ -3,6 +3,7 @@ import type { ColorPalette } from "../../../types/aquarium";
 
 import { DECORATION_OPTIONS } from "../Decorations/DecorationCatalog";
 import { BACKGROUND_FISH_OPTIONS } from "../BackgroundFish/BackgroundFishCatalog";
+import { getThemePresetIndex } from "../../../state/aquariumState";
 import { useAquarium } from "../../../context/AquariumContext";
 import { useAquariumUi } from "../../../context/AquariumUiContext";
 
@@ -37,6 +38,8 @@ export default function AquariumControls() {
     (item) => item.category === "furniture",
   );
 
+  const canRemoveDecoration = aquarium.decorations.length > 0;
+
   // Descriptive list for mapping color part pickers
   const bodyParts = [
     { id: "body", label: "Body" },
@@ -46,7 +49,10 @@ export default function AquariumControls() {
     { id: "legs", label: "Legs" },
     { id: "toes", label: "Toes" },
     { id: "eyes", label: "Eyes" },
-  ] satisfies { id: keyof Omit<ColorPalette, "name" | "glowIntensity">; label: string }[];
+  ] satisfies {
+    id: keyof Omit<ColorPalette, "name" | "glowIntensity">;
+    label: string;
+  }[];
 
   return (
     <>
@@ -72,13 +78,21 @@ export default function AquariumControls() {
         {furnitureOptions.map((option) => (
           <button
             key={option.type}
-            className={`rainbow-btn side-btn ${option.colorClass}`}
+            className={`rainbow-btn side-btn ${option.buttonClass}`}
             disabled={!canAddDecoration}
             onClick={() => aquarium.addDecoration(option.type)}
           >
             + {option.label}
           </button>
         ))}
+
+        <button
+          className="rainbow-btn side-btn btn-danger"
+          disabled={!canRemoveDecoration}
+          onClick={aquarium.removeLastDecoration}
+        >
+          - Furniture
+        </button>
 
         <div className="side-divider" />
         <span className="side-count">
@@ -88,7 +102,7 @@ export default function AquariumControls() {
         {BACKGROUND_FISH_OPTIONS.map((option) => (
           <button
             key={option.type}
-            className={`rainbow-btn side-btn ${option.colorClass}`}
+            className={`rainbow-btn side-btn ${option.buttonClass}`}
             disabled={!canAddBackgroundFish}
             onClick={() => aquarium.addBackgroundFish(option.type)}
           >
@@ -96,25 +110,18 @@ export default function AquariumControls() {
           </button>
         ))}
         <button
-          className="rainbow-btn side-btn btn-rose"
+          className="rainbow-btn side-btn btn-danger"
           disabled={aquarium.backgroundFish.length === 0}
           onClick={aquarium.removeLastBackgroundFish}
         >
           - Fish
-        </button>
-
-        <button
-          className={`rainbow-btn side-btn ${ui.deleteMode ? "btn-rose" : "btn-indigo"}`}
-          onClick={() => ui.setDeleteMode(!ui.deleteMode)}
-        >
-          {ui.deleteMode ? "Done Deleting" : "Delete Mode"}
         </button>
       </section>
 
       {/* RIGHT PANEL: Color Lab */}
       <section className="side-panel right-panel">
         <button
-          className="rainbow-btn side-btn btn-teal"
+          className="rainbow-btn side-btn btn-secondary"
           onClick={() => setShowColorLab(!showColorLab)}
         >
           Color Options {showColorLab ? "^" : "v"}
@@ -123,10 +130,23 @@ export default function AquariumControls() {
         {showColorLab && (
           <>
             <div className="theme-preset-list">
+              <button
+                type="button"
+                className={`rainbow-btn side-btn btn-secondary ${aquarium.isCustomPalette ? "btn-active" : ""}`}
+                onClick={aquarium.selectCustomPalette}
+              >
+                Custom
+              </button>
+
               {aquarium.themePresets.map((name) => (
                 <button
                   key={name}
-                  className="rainbow-btn side-btn btn-blue"
+                  className={`rainbow-btn side-btn btn-secondary ${
+                    !aquarium.isCustomPalette &&
+                    aquarium.colorIndex === getThemePresetIndex(name)
+                      ? "btn-active"
+                      : ""
+                  }`}
                   onClick={() => aquarium.applyThemePreset(name)}
                 >
                   {name}
@@ -182,18 +202,18 @@ export default function AquariumControls() {
       {/* BOTTOM CENTER BAR: Functional Controls */}
       <section className="main-controls-bar">
         <Group title="Care">
-          <button onClick={ui.petAxolotl} className="rainbow-btn btn-red">
+          <button onClick={ui.petAxolotl} className="rainbow-btn btn-primary">
             Pet
           </button>
           <button
             onClick={aquarium.handleFeed}
-            className="rainbow-btn btn-orange"
+            className="rainbow-btn btn-success"
           >
             Feed
           </button>
           <button
             onClick={aquarium.handleDropTreat}
-            className="rainbow-btn btn-yellow"
+            className="rainbow-btn btn-info"
           >
             Treat
           </button>
@@ -204,19 +224,19 @@ export default function AquariumControls() {
         <Group title="Behavior">
           <button
             onClick={() => aquarium.setMood("excited")}
-            className={`rainbow-btn ${aquarium.mood === "excited" ? "btn-pink" : "btn-purple"}`}
+            className={`rainbow-btn btn-secondary ${aquarium.mood === "excited" ? "btn-active" : ""}`}
           >
             Excited
           </button>
           <button
             onClick={() => aquarium.setMood("chill")}
-            className={`rainbow-btn ${aquarium.mood === "chill" ? "btn-indigo" : "btn-purple"}`}
+            className={`rainbow-btn btn-secondary ${aquarium.mood === "chill" ? "btn-active" : ""}`}
           >
             Chill
           </button>
           <button
             onClick={() => aquarium.setMood("lazy")}
-            className={`rainbow-btn ${aquarium.mood === "lazy" ? "btn-purple" : "btn-indigo"}`}
+            className={`rainbow-btn btn-secondary ${aquarium.mood === "lazy" ? "btn-active" : ""}`}
           >
             Lazy
           </button>
@@ -231,19 +251,19 @@ export default function AquariumControls() {
                 mode === "day" ? "night" : "day",
               )
             }
-            className="rainbow-btn btn-green"
+            className="rainbow-btn btn-success"
           >
             {aquarium.lightMode === "day" ? "Day" : "Night"}
           </button>
           <button
             onClick={aquarium.cycleSubstrate}
-            className="rainbow-btn btn-teal"
+            className="rainbow-btn btn-secondary"
           >
             {aquarium.substrate}
           </button>
           <button
             onClick={ui.cycleFoliage}
-            className="rainbow-btn btn-green"
+            className="rainbow-btn btn-success"
             disabled={!aquarium.showGrass}
           >
             {aquarium.showGrass ? ui.foliageStyle : "Off"}
@@ -256,21 +276,21 @@ export default function AquariumControls() {
           <button
             onClick={() => ui.setTrick("barrelRoll")}
             disabled={ui.trick !== "none"}
-            className="rainbow-btn btn-blue"
+            className="rainbow-btn btn-info"
           >
             Roll
           </button>
           <button
             onClick={() => ui.setTrick("backflip")}
             disabled={ui.trick !== "none"}
-            className="rainbow-btn btn-blue"
+            className="rainbow-btn btn-info"
           >
             Flip
           </button>
           <button
             onClick={() => ui.setTrick("spin")}
             disabled={ui.trick !== "none"}
-            className="rainbow-btn btn-blue"
+            className="rainbow-btn btn-info"
           >
             Spin
           </button>

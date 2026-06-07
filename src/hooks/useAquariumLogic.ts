@@ -10,6 +10,18 @@ import type {
 } from "../types/aquarium";
 import { AXOLOTL_COLORS } from "../constants/colors";
 import { SUBSTRATE_TYPES } from "../components/visuals/Environment/Substrate";
+
+const BLANK_CUSTOM_PALETTE: ColorPalette = {
+  name: "Custom",
+  body: "#dfe9ff",
+  gills: "#c8d9ff",
+  fins: "#eef5ff",
+  tail: "#dfe9ff",
+  legs: "#dfe9ff",
+  toes: "#c0d4ef",
+  eyes: "#5a6a8f",
+  glowIntensity: 0.4,
+};
 import {
   createBackgroundFish,
   createCustomPalette,
@@ -44,19 +56,18 @@ export function useAquariumLogic() {
 
   // Decorations collection (furniture and foliage)
   const [decorations, setDecorations] = useState<DecorationItem[]>([]);
-  const [backgroundFish, setBackgroundFish] = useState(
-    () => [createBackgroundFish("blue"), createBackgroundFish("green")],
-  );
+  const [backgroundFish, setBackgroundFish] = useState(() => [
+    createBackgroundFish("blue"),
+    createBackgroundFish("green"),
+  ]);
 
   // --- COLOR & PALETTE STATE ---
   const [colorIndex, setColorIndex] = useState(0);
   const [isCustomPalette, setIsCustomPalette] = useState(false);
 
-  // Initialize custom palette based on the first preset
-  const [customPalette, setCustomPalette] = useState<ColorPalette>({
-    ...AXOLOTL_COLORS[0],
-    name: "Custom",
-  });
+  // Initialize custom palette with a neutral base so users can paint from blank
+  const [customPalette, setCustomPalette] =
+    useState<ColorPalette>(BLANK_CUSTOM_PALETTE);
 
   // Derived current color based on user selection toggle
   const currentColor: ColorPalette = isCustomPalette
@@ -130,6 +141,10 @@ export function useAquariumLogic() {
     setBackgroundFish((prev) => prev.slice(0, -1));
   }, []);
 
+  const removeLastDecoration = useCallback(() => {
+    setDecorations((prev) => prev.slice(0, -1));
+  }, []);
+
   const moveDecoration = useCallback(
     (id: number, position: [number, number, number]) => {
       setDecorations((prev) =>
@@ -168,13 +183,19 @@ export function useAquariumLogic() {
     [colorIndex, customPalette, isCustomPalette],
   );
 
+  const selectCustomPalette = useCallback(() => {
+    setCustomPalette((prev) =>
+      prev.name === "Custom" ? prev : BLANK_CUSTOM_PALETTE,
+    );
+    setIsCustomPalette(true);
+  }, []);
+
   /** Maps a named theme string to its corresponding index in AXOLOTL_COLORS */
   const applyThemePreset = useCallback(
     (name: (typeof THEME_PRESETS)[number]) => {
       const index = getThemePresetIndex(name);
       if (index < 0) return;
       setColorIndex(index);
-      setCustomPalette({ ...AXOLOTL_COLORS[index], name: "Custom" });
       setIsCustomPalette(false);
     },
     [],
@@ -224,12 +245,14 @@ export function useAquariumLogic() {
     addBackgroundFish,
     removeBackgroundFish,
     removeLastBackgroundFish,
+    removeLastDecoration,
     moveDecoration,
     removeDecoration,
     cycleSubstrate,
     selectColor,
     updateCustomPalette,
     applyThemePreset,
+    selectCustomPalette,
 
     /** Cycles through presets while disabling custom mode */
     cycleColor: () => {

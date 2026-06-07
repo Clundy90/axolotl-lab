@@ -3,7 +3,7 @@ import type { BackgroundFishType } from "../../../types/aquarium";
 export interface BackgroundFishOption {
   type: BackgroundFishType;
   label: string;
-  colorClass: string;
+  buttonClass: string;
   url: string;
 }
 
@@ -11,25 +11,25 @@ export const BACKGROUND_FISH_OPTIONS: BackgroundFishOption[] = [
   {
     type: "blue",
     label: "Blue Fish",
-    colorClass: "btn-blue",
+    buttonClass: "btn-primary",
     url: "/textures/fish_blue.svg",
   },
   {
     type: "green",
     label: "Green Fish",
-    colorClass: "btn-green",
+    buttonClass: "btn-primary",
     url: "/textures/fish_green.svg",
   },
   {
     type: "brown",
     label: "Brown Fish",
-    colorClass: "btn-indigo",
+    buttonClass: "btn-primary",
     url: "/textures/fish_brown.svg",
   },
   {
     type: "orange",
     label: "Orange Fish",
-    colorClass: "btn-yellow",
+    buttonClass: "btn-primary",
     url: "/textures/fish_orange.svg",
   },
 ];

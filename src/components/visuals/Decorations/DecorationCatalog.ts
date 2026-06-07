@@ -7,7 +7,7 @@ export interface DecorationOption {
   type: DecorationType;
   category: DecorationCategory;
   label: string;
-  colorClass: string;
+  buttonClass: string;
 }
 
 export const DECORATION_OPTIONS: DecorationOption[] = [
@@ -15,30 +15,30 @@ export const DECORATION_OPTIONS: DecorationOption[] = [
     type: "castle",
     category: "furniture",
     label: "Castle",
-    colorClass: "btn-blue",
+    buttonClass: "btn-primary",
   },
   {
     type: "log",
     category: "furniture",
     label: "Log",
-    colorClass: "btn-indigo",
+    buttonClass: "btn-primary",
   },
   {
     type: "treasureChest",
     category: "furniture",
     label: "Treasure",
-    colorClass: "btn-yellow",
+    buttonClass: "btn-primary",
   },
   {
     type: "brainCoral",
     category: "furniture",
     label: "Coral",
-    colorClass: "btn-pink",
+    buttonClass: "btn-primary",
   },
   {
     type: "seaUrchin",
     category: "furniture",
     label: "Urchin",
-    colorClass: "btn-teal",
+    buttonClass: "btn-primary",
   },
 ];
