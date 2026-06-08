@@ -8,7 +8,7 @@ import type {
   DecorationType,
 } from "../types/aquarium";
 
-export const MAX_DECORATIONS = 20;
+export const MAX_DECORATIONS = 12;
 export const MAX_BACKGROUND_FISH = 12;
 export const THEME_PRESETS = ["Bubblegum", "Cosmo", "Deep Sea"] as const;
 

@@ -62,7 +62,7 @@ export default function AquariumControls() {
           type="text"
           value={ui.petName}
           onChange={(event) => ui.setPetName(event.target.value)}
-          placeholder="Name your axolotl"
+          placeholder="Name Your Axolotl"
           className="aquarium-title-input"
           spellCheck={false}
           maxLength={30}
