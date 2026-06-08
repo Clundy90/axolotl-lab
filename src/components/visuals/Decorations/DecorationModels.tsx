@@ -11,35 +11,33 @@ import type { DecorationType } from "../../../types/aquarium";
  */
 
 const ASSET_ROOTS: Record<DecorationType, string> = {
-  castle: "/Aquarium_Castle_v1_L1.123c68c7e8e7-0239-4852-a01d-384b6747c08d",
-  log: "/Aquarium_Log_v1_L3.123c948711d4-4661-4612-9de0-2f84b67e5d21",
-  treasureChest:
-    "/aquarium_treasure_chest_v1_L2.123c20c98872-e08b-4c2e-bc02-5b3efe215604",
-  brainCoral: "/Brain_Coral_v1_L1.123c952dcd3e-dc3a-41a5-b56e-548475a0de97",
-  seaUrchin:
-    "/Pencil_sea_urchin_V1_L1.123cbeb8e568-4553-4b0a-b574-b4bf263bb74d",
+  castle: "/castle",
+  log: "/log",
+  treasureChest: "/treasure-chest",
+  brainCoral: "/coral",
+  seaUrchin: "/urchin",
 };
 
 const MODEL_FILES: Record<DecorationType, { obj: string; mtl: string }> = {
   castle: {
-    obj: "13020_Aquarium_Castle_v1_L1.obj",
-    mtl: "13020_Aquarium_Castle_v1_L1.mtl",
+    obj: "castle.obj",
+    mtl: "castle.mtl",
   },
   log: {
-    obj: "13021_Aquarium_Log_v1_L3.obj",
-    mtl: "13021_Aquarium_Log_v1_L3.mtl",
+    obj: "log.obj",
+    mtl: "log.mtl",
   },
   treasureChest: {
-    obj: "13019_aquarium_treasure_chest_v1_L2.obj",
-    mtl: "13019_aquarium_treasure_chest_v1_L2.mtl",
+    obj: "treasure.obj",
+    mtl: "treasure.mtl",
   },
   brainCoral: {
-    obj: "20941_Brain_Coral_v1_NEW1.obj",
-    mtl: "20941_Brain_Coral_v1_NEW1.mtl",
+    obj: "coral.obj",
+    mtl: "coral.mtl",
   },
   seaUrchin: {
-    obj: "18765_Pencil_sea_urchin_V1.obj",
-    mtl: "Blank.mtl",
+    obj: "urchin.obj",
+    mtl: "urchin.mtl",
   },
 };
 
@@ -80,7 +78,9 @@ function normalizeModel(object: THREE.Group, targetHeight: number) {
 export default function DecorationModel({ type }: { type: DecorationType }) {
   const root = ASSET_ROOTS[type];
   const files = MODEL_FILES[type];
-  const materials = useLoader(MTLLoader, `${root}/${files.mtl}`);
+  const materials = useLoader(MTLLoader, `${root}/${files.mtl}`, (loader) => {
+    loader.setResourcePath(`${root}/`);
+  });
   materials.preload();
 
   const source = useLoader(OBJLoader, `${root}/${files.obj}`, (loader) => {

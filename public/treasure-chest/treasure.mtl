@@ -60,8 +60,8 @@ newmtl aquarium_treasure_chest
 	Kd 0.9490 0.9412 0.9412
 	Ks 0.2700 0.2700 0.2700
 	Ke 0.0000 0.0000 0.0000
-	map_Ka aquarium_treasure_chest_diffuse.jpg
-	map_Kd aquarium_treasure_chest_diffuse.jpg
+	map_Ka treasure.jpg
+	map_Kd treasure.jpg
 
 newmtl Material__2
 	Ns 70.0000
