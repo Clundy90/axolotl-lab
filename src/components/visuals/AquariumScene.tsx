@@ -21,9 +21,7 @@ export default function AquariumScene() {
     <Canvas shadows camera={{ position: [0, 0.25, 8], fov: 35 }}>
       <Lighting mode={aquarium.lightMode} />
       <BubbleStream />
-      <BackgroundFishLayer
-        fish={aquarium.backgroundFish}
-      />
+      <BackgroundFishLayer fish={aquarium.backgroundFish} />
       <Substrate type={aquarium.substrate} />
       <Foliage visible={aquarium.showGrass} type={ui.foliageStyle} count={14} />
 

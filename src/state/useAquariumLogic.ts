@@ -7,8 +7,8 @@ import type {
   FeedItem,
   DecorationItem,
   DecorationType,
-} from "../types/aquarium";
-import { AXOLOTL_COLORS } from "../constants/colors";
+} from "./aquarium";
+import { AXOLOTL_COLORS } from "./colors";
 import { SUBSTRATE_TYPES } from "../components/visuals/Environment/Substrate";
 
 const BLANK_CUSTOM_PALETTE: ColorPalette = {
@@ -30,7 +30,7 @@ import {
   MAX_BACKGROUND_FISH,
   MAX_DECORATIONS,
   THEME_PRESETS,
-} from "../state/aquariumState";
+} from "./aquariumState";
 
 /**
  * useAquariumLogic Hook

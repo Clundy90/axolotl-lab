@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import type { BackgroundFishItem } from "../../../types/aquarium";
+import type { BackgroundFishItem } from "../../../state/aquarium";
 import BackgroundFishSprite from "./BackgroundFishModels";
 import { wrapBackgroundFishX } from "../../../state/aquariumState";
 
@@ -17,12 +17,10 @@ function SwimmingFish({ fish }: { fish: BackgroundFishItem }) {
 
     const nextX =
       groupRef.current.position.x + fish.direction * fish.speed * delta;
-    groupRef.current.position.x = wrapBackgroundFishX(
-      nextX,
-      fish.direction,
-    );
+    groupRef.current.position.x = wrapBackgroundFishX(nextX, fish.direction);
     groupRef.current.position.y =
-      fish.position[1] + Math.sin(state.clock.elapsedTime * 1.2 + fish.id) * 0.08;
+      fish.position[1] +
+      Math.sin(state.clock.elapsedTime * 1.2 + fish.id) * 0.08;
   });
 
   return (

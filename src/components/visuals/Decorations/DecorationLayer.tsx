@@ -1,7 +1,7 @@
 import React, { useMemo, useRef } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
-import type { DecorationItem, DecorationType } from "../../../types/aquarium";
+import type { DecorationItem, DecorationType } from "../../../state/aquarium";
 
 import DecorationModel from "./DecorationModels";
 

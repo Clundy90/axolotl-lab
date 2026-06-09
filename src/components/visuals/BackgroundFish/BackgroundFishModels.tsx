@@ -1,7 +1,7 @@
 import React from "react";
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import type { BackgroundFishType } from "../../../types/aquarium";
+import type { BackgroundFishType } from "../../../state/aquarium";
 import {
   BACKGROUND_FISH_OPTIONS,
   getBackgroundFishUrl,

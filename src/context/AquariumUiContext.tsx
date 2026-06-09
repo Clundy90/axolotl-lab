@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import type { AxolotlTrick, FoliageType } from "../types/aquarium";
+import type { AxolotlTrick, FoliageType } from "../state/aquarium";
 
 interface AquariumUiContextValue {
   petName: string;

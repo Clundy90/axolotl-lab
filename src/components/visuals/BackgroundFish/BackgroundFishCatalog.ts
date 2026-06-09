@@ -1,4 +1,4 @@
-import type { BackgroundFishType } from "../../../types/aquarium";
+import type { BackgroundFishType } from "../../../state/aquarium";
 
 export interface BackgroundFishOption {
   type: BackgroundFishType;

@@ -1,4 +1,4 @@
-import type { ColorPalette } from "../types/aquarium";
+import type { ColorPalette } from "./aquarium";
 
 /**
  * AXOLOTL_COLORS

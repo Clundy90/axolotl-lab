@@ -11,7 +11,7 @@ import type {
   AxolotlMood,
   AxolotlTrick,
   ColorPalette,
-} from "../../../types/aquarium";
+} from "../../../state/aquarium";
 
 interface ControllerProps {
   isPetting: boolean;

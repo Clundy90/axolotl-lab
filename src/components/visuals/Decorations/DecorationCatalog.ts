@@ -1,7 +1,7 @@
 import type {
   DecorationCategory,
   DecorationType,
-} from "../../../types/aquarium";
+} from "../../../state/aquarium";
 
 export interface DecorationOption {
   type: DecorationType;

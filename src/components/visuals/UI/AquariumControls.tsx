@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { ColorPalette } from "../../../types/aquarium";
+import type { ColorPalette } from "../../../state/aquarium";
 
 import { DECORATION_OPTIONS } from "../Decorations/DecorationCatalog";
 import { BACKGROUND_FISH_OPTIONS } from "../BackgroundFish/BackgroundFishCatalog";

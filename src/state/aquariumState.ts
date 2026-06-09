@@ -1,4 +1,4 @@
-import { AXOLOTL_COLORS } from "../constants/colors";
+import { AXOLOTL_COLORS } from "./colors";
 import type {
   BackgroundFishItem,
   BackgroundFishType,
@@ -6,7 +6,7 @@ import type {
   DecorationCategory,
   DecorationItem,
   DecorationType,
-} from "../types/aquarium";
+} from "./aquarium";
 
 export const MAX_DECORATIONS = 12;
 export const MAX_BACKGROUND_FISH = 12;

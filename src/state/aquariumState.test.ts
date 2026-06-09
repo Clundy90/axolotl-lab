@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { AXOLOTL_COLORS } from "../constants/colors";
+import { AXOLOTL_COLORS } from "./colors";
 import {
   createBackgroundFish,
   createCustomPalette,
@@ -37,7 +37,11 @@ describe("aquarium state helpers", () => {
   });
 
   test("furniture decorations stay on the substrate layer", () => {
-    const decoration = createDecoration("castle", () => 0.5, () => 1000);
+    const decoration = createDecoration(
+      "castle",
+      () => 0.5,
+      () => 1000,
+    );
 
     expect(decoration.type).toBe("castle");
     expect(decoration.category).toBe("furniture");
@@ -46,7 +50,11 @@ describe("aquarium state helpers", () => {
   });
 
   test("background fish are separate swimmers behind the tank floor", () => {
-    const fish = createBackgroundFish("orange", () => 0.75, () => 2000);
+    const fish = createBackgroundFish(
+      "orange",
+      () => 0.75,
+      () => 2000,
+    );
 
     expect(fish.type).toBe("orange");
     expect(fish.direction).toBe(1);

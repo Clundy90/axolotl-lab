@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import type { ColorPalette } from "../../../../types/aquarium";
+import type { ColorPalette } from "../../../../state/aquarium";
 
 interface GillSetProps {
   side: 1 | -1;

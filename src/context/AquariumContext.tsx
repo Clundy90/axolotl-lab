@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from "react";
-import { useAquariumLogic } from "../hooks/useAquariumLogic";
+import { useAquariumLogic } from "../state/useAquariumLogic";
 
 type AquariumContextValue = ReturnType<typeof useAquariumLogic>;
 

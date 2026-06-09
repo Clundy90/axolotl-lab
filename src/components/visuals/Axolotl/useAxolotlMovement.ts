@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import type { RefObject } from "react";
-import type { AxolotlMood } from "../../../types/aquarium";
+import type { AxolotlMood } from "../../../state/aquarium";
 
 interface MovementProps {
   rootRef: RefObject<THREE.Group>;

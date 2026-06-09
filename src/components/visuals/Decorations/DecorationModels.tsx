@@ -3,7 +3,7 @@ import { useLoader } from "@react-three/fiber";
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import * as THREE from "three";
-import type { DecorationType } from "../../../types/aquarium";
+import type { DecorationType } from "../../../state/aquarium";
 
 /**
  * Loaded aquarium furniture models.

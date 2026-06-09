@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import type { ColorPalette } from "../../../types/aquarium";
+import type { ColorPalette } from "../../../state/aquarium";
 import BreathBubbles from "./parts/BreathBubbles";
 import GillSet from "./parts/GillSet";
 import Leg from "./parts/Leg";
