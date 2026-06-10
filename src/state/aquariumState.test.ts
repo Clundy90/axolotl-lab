@@ -21,19 +21,8 @@ describe("aquarium state helpers", () => {
       body: "#123456",
       gills: cosmo.gills,
       fins: cosmo.fins,
-      glowIntensity: cosmo.glowIntensity,
     });
     expect(custom.gills).not.toBe(AXOLOTL_COLORS[0].gills);
-  });
-
-  test("glow edits preserve the rest of the selected palette", () => {
-    const deepSea = AXOLOTL_COLORS[getThemePresetIndex("Deep Sea")];
-
-    const custom = createCustomPalette(deepSea, "glowIntensity", 1.7);
-
-    expect(custom.glowIntensity).toBe(1.7);
-    expect(custom.body).toBe(deepSea.body);
-    expect(custom.tail).toBe(deepSea.tail);
   });
 
   test("furniture decorations stay on the substrate layer", () => {

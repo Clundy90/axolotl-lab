@@ -9,6 +9,14 @@ export type AxolotlTrick = "none" | "barrelRoll" | "backflip" | "spin";
 export type FoliageType = "grass" | "kelp" | "vines";
 export type FeedType = "food" | "treat";
 export type SubstrateType = "gravel" | "sand" | "mud";
+export type AccessoryType =
+  | "crown"
+  | "crown2"
+  | "glasses"
+  | "headphones"
+  | "pearlNecklace"
+  | "pixelGlasses"
+  | "topHat";
 
 export type DecorationType =
   | "castle"
@@ -28,7 +36,6 @@ export interface ColorPalette {
   legs: string; // The limbs
   toes: string; // The tips of the feet
   eyes: string; // The sclera/iris
-  glowIntensity: number;
 }
 
 export interface FeedItem {
@@ -60,6 +67,7 @@ export interface AquariumState {
   treats: FeedItem[];
   decorations: DecorationItem[];
   backgroundFish: BackgroundFishItem[];
+  currentAccessory: AccessoryType | null;
   mood: AxolotlMood;
   lightMode: LightMode;
   showGrass: boolean;

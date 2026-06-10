@@ -5,7 +5,6 @@ import * as THREE from "three";
 interface TailProps {
   tailColor: string;
   finColor: string;
-  glow: number;
 }
 
 const SEGMENTS = [
@@ -15,7 +14,7 @@ const SEGMENTS = [
   { radiusA: 0.12, radiusB: 0.07, length: 0.28, amp: 0.34, yFin: 0.12 },
 ];
 
-export default function Tail({ tailColor, finColor, glow }: TailProps) {
+export default function Tail({ tailColor, finColor }: TailProps) {
   // Creating an array of refs for the wave animation
   const refs = [
     useRef<THREE.Group>(null),
@@ -63,7 +62,7 @@ export default function Tail({ tailColor, finColor, glow }: TailProps) {
             transparent
             opacity={0.72}
             emissive={finColor}
-            emissiveIntensity={glow * 0.4}
+            emissiveIntensity={0.16}
           />
         </mesh>
 
@@ -93,7 +92,7 @@ export default function Tail({ tailColor, finColor, glow }: TailProps) {
               transparent
               opacity={0.7}
               emissive={finColor}
-              emissiveIntensity={glow * 0.4}
+              emissiveIntensity={0.16}
             />
           </mesh>
 
@@ -123,7 +122,7 @@ export default function Tail({ tailColor, finColor, glow }: TailProps) {
                 transparent
                 opacity={0.72}
                 emissive={finColor}
-                emissiveIntensity={glow * 0.4}
+                emissiveIntensity={0.16}
               />
             </mesh>
 
@@ -154,7 +153,7 @@ export default function Tail({ tailColor, finColor, glow }: TailProps) {
                   opacity={0.76}
                   roughness={0.62}
                   emissive={finColor}
-                  emissiveIntensity={glow * 0.5}
+                  emissiveIntensity={0.0}
                 />
               </mesh>
             </group>

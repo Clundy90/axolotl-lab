@@ -2,7 +2,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import type { ColorPalette } from "../../../state/aquarium";
+import type { AccessoryType, ColorPalette } from "../../../state/aquarium";
+import AccessoryModel from "../../Accessories/AccessoryModel";
 import BreathBubbles from "./parts/BreathBubbles";
 import GillSet from "./parts/GillSet";
 import Leg from "./parts/Leg";
@@ -13,6 +14,7 @@ interface AxolotlModelProps {
   isFeeding: boolean;
   colorPalette: ColorPalette;
   snackCount: number;
+  currentAccessory: AccessoryType | null;
 }
 
 export default function ToyAxolotl({
@@ -20,6 +22,7 @@ export default function ToyAxolotl({
   isFeeding,
   colorPalette,
   snackCount,
+  currentAccessory,
 }: AxolotlModelProps) {
   const bodyRef = useRef<THREE.Group>(null);
   const headRef = useRef<THREE.Group>(null);
@@ -49,17 +52,13 @@ export default function ToyAxolotl({
   // Material helpers
   const glowMaterial = {
     emissive: new THREE.Color(colorPalette.body),
-    emissiveIntensity: colorPalette.glowIntensity * 0.15,
+    emissiveIntensity: 0.14,
   };
 
   return (
     <group scale={0.58}>
       {/* TAIL: Split into muscle and fins */}
-      <Tail
-        tailColor={colorPalette.tail}
-        finColor={colorPalette.fins}
-        glow={colorPalette.glowIntensity}
-      />
+      <Tail tailColor={colorPalette.tail} finColor={colorPalette.fins} />
 
       <group ref={bodyRef} position={[0, -0.02, 0.06]}>
         {/* MAIN BODY */}
@@ -128,6 +127,8 @@ export default function ToyAxolotl({
         {/* GILLS */}
         <GillSet side={1} color={colorPalette.gills} />
         <GillSet side={-1} color={colorPalette.gills} />
+
+        {currentAccessory ? <AccessoryModel type={currentAccessory} /> : null}
       </group>
 
       {/* LEGS & TOES */}

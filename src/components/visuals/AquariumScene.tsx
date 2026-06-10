@@ -34,6 +34,20 @@ export default function AquariumScene() {
         />
       </Suspense>
 
+      <Suspense fallback={null}>
+        <AxolotlController
+          isPetting={ui.isPetting}
+          setIsPetting={ui.setIsPetting}
+          isFeeding={aquarium.foods.length > 0 || aquarium.treats.length > 0}
+          snackCount={aquarium.snackCount}
+          colorPalette={aquarium.currentColor}
+          mood={aquarium.mood}
+          trick={ui.trick}
+          currentAccessory={aquarium.currentAccessory}
+          onTrickComplete={() => ui.setTrick("none")}
+        />
+      </Suspense>
+
       {aquarium.foods.map((food) => (
         <Food
           key={food.id}
@@ -57,17 +71,6 @@ export default function AquariumScene() {
           onMissed={aquarium.missTreat}
         />
       ))}
-
-      <AxolotlController
-        isPetting={ui.isPetting}
-        setIsPetting={ui.setIsPetting}
-        isFeeding={aquarium.foods.length > 0 || aquarium.treats.length > 0}
-        snackCount={aquarium.snackCount}
-        colorPalette={aquarium.currentColor}
-        mood={aquarium.mood}
-        trick={ui.trick}
-        onTrickComplete={() => ui.setTrick("none")}
-      />
 
       <Environment preset="sunset" />
       <ContactShadows

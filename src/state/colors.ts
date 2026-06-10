@@ -15,7 +15,6 @@ export const AXOLOTL_COLORS: ColorPalette[] = [
     legs: "#ffb3c6",
     toes: "#ff8fa3",
     eyes: "#000000",
-    glowIntensity: 0.8,
   },
   {
     name: "Cosmo",
@@ -26,7 +25,6 @@ export const AXOLOTL_COLORS: ColorPalette[] = [
     legs: "#a29bfe",
     toes: "#d63031",
     eyes: "#000000",
-    glowIntensity: 1.2,
   },
   {
     name: "Stardust",
@@ -37,7 +35,6 @@ export const AXOLOTL_COLORS: ColorPalette[] = [
     legs: "#f5d48a",
     toes: "#fae7bc",
     eyes: "#000000",
-    glowIntensity: 1.0,
   },
   {
     name: "Deep Sea",
@@ -48,7 +45,6 @@ export const AXOLOTL_COLORS: ColorPalette[] = [
     legs: "#00cec9",
     toes: "#81ecec",
     eyes: "#000000",
-    glowIntensity: 0.6,
   },
   {
     name: "Galaxy",
@@ -59,6 +55,5 @@ export const AXOLOTL_COLORS: ColorPalette[] = [
     legs: "#2d3436",
     toes: "#636e72",
     eyes: "#a29bfe",
-    glowIntensity: 1.5,
   },
 ];

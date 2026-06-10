@@ -1,15 +1,13 @@
 import React, { useState } from "react";
 import type { ColorPalette } from "../../../state/aquarium";
 
+import { ACCESSORY_OPTIONS } from "../../Accessories/AccessoryCatalog";
 import { DECORATION_OPTIONS } from "../Decorations/DecorationCatalog";
 import { BACKGROUND_FISH_OPTIONS } from "../BackgroundFish/BackgroundFishCatalog";
 import { getThemePresetIndex } from "../../../state/aquariumState";
 import { useAquarium } from "../../../context/AquariumContext";
 import { useAquariumUi } from "../../../context/AquariumUiContext";
 
-/**
- * Helper component for grouping UI buttons into logical categories.
- */
 function Group({
   title,
   children,
@@ -28,19 +26,17 @@ function Group({
 export default function AquariumControls() {
   const aquarium = useAquarium();
   const ui = useAquariumUi();
-  const [showColorLab, setShowColorLab] = useState(true);
+  const [showOptions, setShowOptions] = useState(false);
 
   const canAddDecoration =
     aquarium.decorations.length < aquarium.maxDecorations;
   const canAddBackgroundFish =
     aquarium.backgroundFish.length < aquarium.maxBackgroundFish;
+  const canClearAccessory = aquarium.currentAccessory !== null;
   const furnitureOptions = DECORATION_OPTIONS.filter(
     (item) => item.category === "furniture",
   );
 
-  const canRemoveDecoration = aquarium.decorations.length > 0;
-
-  // Descriptive list for mapping color part pickers
   const bodyParts = [
     { id: "body", label: "Body" },
     { id: "gills", label: "Gills" },
@@ -50,13 +46,12 @@ export default function AquariumControls() {
     { id: "toes", label: "Toes" },
     { id: "eyes", label: "Eyes" },
   ] satisfies {
-    id: keyof Omit<ColorPalette, "name" | "glowIntensity">;
+    id: keyof Omit<ColorPalette, "name">;
     label: string;
   }[];
 
   return (
     <>
-      {/* HEADER: Pet Naming */}
       <div className="title-ribbon">
         <input
           type="text"
@@ -69,7 +64,6 @@ export default function AquariumControls() {
         />
       </div>
 
-      {/* LEFT PANEL: Decoration Controls */}
       <section className="side-panel left-panel">
         <span className="side-count">
           Furniture {aquarium.decorations.length}/{aquarium.maxDecorations}
@@ -88,7 +82,7 @@ export default function AquariumControls() {
 
         <button
           className="rainbow-btn side-btn btn-danger"
-          disabled={!canRemoveDecoration}
+          disabled={aquarium.decorations.length === 0}
           onClick={aquarium.removeLastDecoration}
         >
           - Furniture
@@ -118,17 +112,39 @@ export default function AquariumControls() {
         </button>
       </section>
 
-      {/* RIGHT PANEL: Color Lab */}
       <section className="side-panel right-panel">
         <button
           className="rainbow-btn side-btn btn-secondary"
-          onClick={() => setShowColorLab(!showColorLab)}
+          onClick={() => setShowOptions((value) => !value)}
         >
-          Color Options {showColorLab ? "^" : "v"}
+          Options {showOptions ? "^" : "v"}
         </button>
 
-        {showColorLab && (
+        {showOptions && (
           <>
+            <span className="side-count">Wearables</span>
+            <p className="side-subtitle">Accessories</p>
+            <div className="theme-preset-list">
+              {ACCESSORY_OPTIONS.map((option) => (
+                <button
+                  key={option.type}
+                  className={`rainbow-btn side-btn ${option.buttonClass} ${aquarium.currentAccessory === option.type ? "btn-active" : ""}`}
+                  onClick={() => aquarium.setCurrentAccessory(option.type)}
+                >
+                  {option.label}
+                </button>
+              ))}
+              <button
+                className="rainbow-btn side-btn btn-danger"
+                disabled={!canClearAccessory}
+                onClick={() => aquarium.setCurrentAccessory(null)}
+              >
+                Remove Accessory
+              </button>
+            </div>
+
+            <div className="side-divider" />
+            <p className="side-subtitle">Color Palette</p>
             <div className="theme-preset-list">
               <button
                 type="button"
@@ -154,52 +170,33 @@ export default function AquariumControls() {
               ))}
             </div>
 
-            <div className="side-divider" />
-            <p className="side-subtitle">
-              {aquarium.isCustomPalette ? "Custom Palette" : "Theme Palette"}
-            </p>
-
-            <div className="custom-color-list">
-              {bodyParts.map((part) => (
-                <label key={part.id} className="color-edit-row">
-                  <span>{part.label}</span>
-                  <input
-                    type="color"
-                    value={aquarium.currentColor[part.id]}
-                    onChange={(e) =>
-                      aquarium.updateCustomPalette(part.id, e.target.value)
-                    }
-                  />
-                </label>
-              ))}
-
-              <div className="side-divider" />
-              <label
-                className="color-edit-row"
-                style={{ flexDirection: "column", alignItems: "flex-start" }}
-              >
-                <span>Glow Intensity</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="2"
-                  step="0.1"
-                  style={{ width: "100%" }}
-                  value={aquarium.currentColor.glowIntensity}
-                  onChange={(e) =>
-                    aquarium.updateCustomPalette(
-                      "glowIntensity",
-                      parseFloat(e.target.value),
-                    )
-                  }
-                />
-              </label>
-            </div>
+            {!aquarium.isCustomPalette ? (
+              <p className="side-hint">
+                Pick Custom to edit individual colors.
+              </p>
+            ) : (
+              <>
+                <div className="side-divider" />
+                <div className="custom-color-list">
+                  {bodyParts.map((part) => (
+                    <label key={part.id} className="color-edit-row">
+                      <span>{part.label}</span>
+                      <input
+                        type="color"
+                        value={aquarium.currentColor[part.id]}
+                        onChange={(e) =>
+                          aquarium.updateCustomPalette(part.id, e.target.value)
+                        }
+                      />
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
           </>
         )}
       </section>
 
-      {/* BOTTOM CENTER BAR: Functional Controls */}
       <section className="main-controls-bar">
         <Group title="Care">
           <button onClick={ui.petAxolotl} className="rainbow-btn btn-primary">

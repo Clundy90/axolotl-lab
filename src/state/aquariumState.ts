@@ -19,7 +19,7 @@ export function getThemePresetIndex(name: (typeof THEME_PRESETS)[number]) {
 export function createCustomPalette(
   basePalette: ColorPalette,
   field: keyof Omit<ColorPalette, "name">,
-  value: string | number,
+  value: string,
 ): ColorPalette {
   return {
     ...basePalette,

@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import type {
+  AccessoryType,
   AxolotlMood,
   BackgroundFishType,
   LightMode,
@@ -20,7 +21,6 @@ const BLANK_CUSTOM_PALETTE: ColorPalette = {
   legs: "#dfe9ff",
   toes: "#c0d4ef",
   eyes: "#5a6a8f",
-  glowIntensity: 0.4,
 };
 import {
   createBackgroundFish,
@@ -60,6 +60,8 @@ export function useAquariumLogic() {
     createBackgroundFish("blue"),
     createBackgroundFish("green"),
   ]);
+  const [currentAccessory, setCurrentAccessory] =
+    useState<AccessoryType | null>(null);
 
   // --- COLOR & PALETTE STATE ---
   const [colorIndex, setColorIndex] = useState(0);
@@ -170,10 +172,9 @@ export function useAquariumLogic() {
   /**
    * updateCustomPalette
    * Supports specific body part overrides: body, gills, fins, tail, legs, toes, eyes.
-   * Also handles numeric glowIntensity via the same setter logic.
    */
   const updateCustomPalette = useCallback(
-    (field: keyof Omit<ColorPalette, "name">, value: string | number) => {
+    (field: keyof Omit<ColorPalette, "name">, value: string) => {
       const basePalette = isCustomPalette
         ? customPalette
         : AXOLOTL_COLORS[colorIndex];
@@ -216,6 +217,7 @@ export function useAquariumLogic() {
     treats,
     decorations,
     backgroundFish,
+    currentAccessory,
     snackCount,
     mood,
     lightMode,
@@ -248,6 +250,7 @@ export function useAquariumLogic() {
     removeLastDecoration,
     moveDecoration,
     removeDecoration,
+    setCurrentAccessory,
     cycleSubstrate,
     selectColor,
     updateCustomPalette,

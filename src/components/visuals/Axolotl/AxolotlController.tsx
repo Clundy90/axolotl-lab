@@ -8,6 +8,7 @@ import { TrickHandler } from "../Behavior/TrickHandler";
 import { useAxolotlMovement } from "./useAxolotlMovement";
 // Import the types from your centralized file
 import type {
+  AccessoryType,
   AxolotlMood,
   AxolotlTrick,
   ColorPalette,
@@ -21,6 +22,7 @@ interface ControllerProps {
   colorPalette: ColorPalette;
   mood: AxolotlMood;
   trick: AxolotlTrick;
+  currentAccessory: AccessoryType | null;
   onTrickComplete: () => void;
 }
 
@@ -32,6 +34,7 @@ export default function AxolotlController({
   colorPalette,
   mood,
   trick,
+  currentAccessory,
   onTrickComplete,
 }: ControllerProps) {
   const rootRef = useRef<THREE.Group>(null!);
@@ -74,6 +77,7 @@ export default function AxolotlController({
           isFeeding={isFeeding}
           colorPalette={colorPalette}
           snackCount={snackCount}
+          currentAccessory={currentAccessory}
         />
       </group>
     </Float>
