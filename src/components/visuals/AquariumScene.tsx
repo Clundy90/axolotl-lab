@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ContactShadows, Environment } from "@react-three/drei";
 import AxolotlController from "./Axolotl/AxolotlController";
+import { AquariumBackground } from "../Background/backgroundTexture";
 import Substrate from "./Environment/Substrate";
 import { BubbleStream } from "./Environment/EnvironmentEffects";
 import Foliage from "./Environment/CreateFoliage";
@@ -16,9 +17,15 @@ import { useAquariumUi } from "../../context/AquariumUiContext";
 export default function AquariumScene() {
   const aquarium = useAquarium();
   const ui = useAquariumUi();
+  const backgroundUrl = aquarium.currentBackground.url;
 
   return (
     <Canvas shadows camera={{ position: [0, 0.25, 8], fov: 35 }}>
+      {backgroundUrl && (
+        <Suspense fallback={null}>
+          <AquariumBackground currentBgUrl={backgroundUrl} />
+        </Suspense>
+      )}
       <Lighting mode={aquarium.lightMode} />
       <BubbleStream />
       <BackgroundFishLayer fish={aquarium.backgroundFish} />

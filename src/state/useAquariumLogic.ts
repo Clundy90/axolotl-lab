@@ -11,6 +11,11 @@ import type {
 } from "./aquarium";
 import { AXOLOTL_COLORS } from "./colors";
 import { SUBSTRATE_TYPES } from "../components/visuals/Environment/Substrate";
+import {
+  AQUARIUM_BACKGROUNDS,
+  type BackgroundOption,
+  getBackgroundById,
+} from "../components/Background/backgroundTypes";
 
 const BLANK_CUSTOM_PALETTE: ColorPalette = {
   name: "Custom",
@@ -53,6 +58,9 @@ export function useAquariumLogic() {
   const [showGrass, setShowGrass] = useState(true);
   const [substrate, setSubstrate] =
     useState<keyof typeof SUBSTRATE_TYPES>("gravel");
+  const [backgroundTextureId, setBackgroundTextureId] = useState(
+    AQUARIUM_BACKGROUNDS[0].id,
+  );
 
   // Decorations collection (furniture and foliage)
   const [decorations, setDecorations] = useState<DecorationItem[]>([]);
@@ -75,6 +83,7 @@ export function useAquariumLogic() {
   const currentColor: ColorPalette = isCustomPalette
     ? customPalette
     : AXOLOTL_COLORS[colorIndex];
+  const currentBackground = getBackgroundById(backgroundTextureId);
 
   // --- FEEDING LOGIC ---
 
@@ -211,6 +220,11 @@ export function useAquariumLogic() {
     setSubstrate(keys[(currentIndex + 1) % keys.length]);
   }, [substrate]);
 
+  const setBackgroundTexture = useCallback((id: BackgroundOption["id"]) => {
+    const nextBackground = getBackgroundById(id);
+    setBackgroundTextureId(nextBackground.id);
+  }, []);
+
   return {
     // State
     foods,
@@ -223,12 +237,14 @@ export function useAquariumLogic() {
     lightMode,
     showGrass,
     currentColor,
+    currentBackground,
     colorIndex,
     isCustomPalette,
     substrate,
 
     // Constants / Options
     colorOptions: AXOLOTL_COLORS,
+    backgroundOptions: AQUARIUM_BACKGROUNDS,
     themePresets: THEME_PRESETS,
     maxDecorations: MAX_DECORATIONS,
     maxBackgroundFish: MAX_BACKGROUND_FISH,
@@ -252,6 +268,7 @@ export function useAquariumLogic() {
     removeDecoration,
     setCurrentAccessory,
     cycleSubstrate,
+    setBackgroundTexture,
     selectColor,
     updateCustomPalette,
     applyThemePreset,

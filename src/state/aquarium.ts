@@ -72,4 +72,5 @@ export interface AquariumState {
   lightMode: LightMode;
   showGrass: boolean;
   currentColor: ColorPalette;
+  currentBackground: { id: string; name: string; url: string };
 }
