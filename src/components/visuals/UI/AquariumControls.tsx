@@ -9,7 +9,6 @@ import { getThemePresetIndex } from "../../../state/aquariumState";
 import { useAquarium } from "../../../context/AquariumContext";
 import { useAquariumUi } from "../../../context/AquariumUiContext";
 
-type MainPanel = "axolotl" | "decorations" | null;
 type AxolotlTab = "care" | "behavior" | "tricks" | "accessories" | "color";
 type DecorationsTab = "furniture" | "fish" | "environment" | "background";
 
@@ -40,7 +39,6 @@ function ButtonGrid({ children }: { children: React.ReactNode }) {
 export default function AquariumControls() {
   const aquarium = useAquarium();
   const ui = useAquariumUi();
-  const [activePanel, setActivePanel] = useState<MainPanel>(null);
   const [axolotlTab, setAxolotlTab] = useState<AxolotlTab>("care");
   const [decorationsTab, setDecorationsTab] =
     useState<DecorationsTab>("furniture");
@@ -66,10 +64,6 @@ export default function AquariumControls() {
     id: keyof Omit<ColorPalette, "name">;
     label: string;
   }[];
-
-  const togglePanel = (panel: Exclude<MainPanel, null>) => {
-    setActivePanel((current) => (current === panel ? null : panel));
-  };
 
   const renderAxolotlTab = () => {
     switch (axolotlTab) {
@@ -328,27 +322,14 @@ export default function AquariumControls() {
         />
       </div>
 
-      <section className="main-controls-bar popup-dock">
-        <div className="popup-launch-row">
-          <button
-            type="button"
-            className={`rainbow-btn btn-secondary popup-launch ${activePanel === "axolotl" ? "btn-active" : ""}`}
-            onClick={() => togglePanel("axolotl")}
-          >
-            Axolotl
-          </button>
-          <button
-            type="button"
-            className={`rainbow-btn btn-secondary popup-launch ${activePanel === "decorations" ? "btn-active" : ""}`}
-            onClick={() => togglePanel("decorations")}
-          >
-            Decorations
-          </button>
-        </div>
+      <section className="ui-split-controls">
+        <div className="side-panel left-panel ui-side-rail">
+          <div className="side-panel-header">
+            <span className="side-title">Axolotl</span>
+          </div>
 
-        {activePanel === "axolotl" ? (
-          <div className="popup-panel popup-panel-wide">
-            <div className="popup-tab-row">
+          <div className="popup-panel popup-panel-wide ui-side-panel">
+            <div className="popup-tab-row popup-tab-column">
               <TabButton
                 label="Care"
                 active={axolotlTab === "care"}
@@ -377,11 +358,15 @@ export default function AquariumControls() {
             </div>
             <div className="popup-content">{renderAxolotlTab()}</div>
           </div>
-        ) : null}
+        </div>
 
-        {activePanel === "decorations" ? (
-          <div className="popup-panel popup-panel-narrow">
-            <div className="popup-tab-row">
+        <div className="side-panel right-panel ui-side-rail">
+          <div className="side-panel-header">
+            <span className="side-title">Decorations</span>
+          </div>
+
+          <div className="popup-panel popup-panel-narrow ui-side-panel">
+            <div className="popup-tab-row popup-tab-column">
               <TabButton
                 label="Furniture"
                 active={decorationsTab === "furniture"}
@@ -405,7 +390,7 @@ export default function AquariumControls() {
             </div>
             <div className="popup-content">{renderDecorationsTab()}</div>
           </div>
-        ) : null}
+        </div>
       </section>
     </>
   );

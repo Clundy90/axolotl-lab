@@ -5,13 +5,6 @@ import { AquariumProvider, useAquarium } from "../../context/AquariumContext";
 import { AquariumUiProvider } from "../../context/AquariumUiContext";
 import "./RainbowButtons.css";
 
-/**
- * Aquarium Component
- * Refined [2026-05-07]
- * - Orchestrates the 3D scene and the UI overlay.
- * - Bridges the useAquariumLogic hook with the visual controllers.
- * - Handles the granular color palette for the Axolotl (body, gills, fins, etc.)
- */
 function AquariumShell() {
   const aquarium = useAquarium();
   const hasBackgroundTexture = Boolean(aquarium.currentBackground.url);
