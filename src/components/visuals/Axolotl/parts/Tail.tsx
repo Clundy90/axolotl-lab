@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -7,158 +7,95 @@ interface TailProps {
   finColor: string;
 }
 
-const SEGMENTS = [
-  { radiusA: 0.26, radiusB: 0.22, length: 0.34, amp: 0.1, yFin: 0.2 },
-  { radiusA: 0.22, radiusB: 0.17, length: 0.32, amp: 0.16, yFin: 0.18 },
-  { radiusA: 0.17, radiusB: 0.12, length: 0.3, amp: 0.24, yFin: 0.15 },
-  { radiusA: 0.12, radiusB: 0.07, length: 0.28, amp: 0.34, yFin: 0.12 },
-];
-
 export default function Tail({ tailColor, finColor }: TailProps) {
-  // Creating an array of refs for the wave animation
-  const refs = [
-    useRef<THREE.Group>(null),
-    useRef<THREE.Group>(null),
-    useRef<THREE.Group>(null),
-    useRef<THREE.Group>(null),
-  ];
+  // Shared uniform object to sync the wave animation across both meshes
+  const uniforms = useMemo(
+    () => ({
+      uTime: { value: 0 },
+      uSpeed: { value: 3.4 },
+      uAmp: { value: 0.35 },
+      uFreq: { value: 3.0 },
+    }),
+    [],
+  );
 
   useFrame(({ clock }) => {
-    const wave = clock.elapsedTime * 3.4;
-    refs.forEach((ref, index) => {
-      if (!ref.current) return;
-      // Tail swing physics
-      ref.current.rotation.y =
-        Math.sin(wave - index * 0.52) * SEGMENTS[index].amp;
-      ref.current.rotation.x = Math.cos(wave * 0.7 - index * 0.4) * 0.02;
-    });
+    uniforms.uTime.value = clock.elapsedTime;
   });
+
+  const onBeforeCompile = (shader: any) => {
+    shader.uniforms.uTime = uniforms.uTime;
+    shader.uniforms.uSpeed = uniforms.uSpeed;
+    shader.uniforms.uAmp = uniforms.uAmp;
+    shader.uniforms.uFreq = uniforms.uFreq;
+
+    shader.vertexShader = `
+      uniform float uTime;
+      uniform float uSpeed;
+      uniform float uAmp;
+      uniform float uFreq;
+      ${shader.vertexShader}
+    `;
+
+    shader.vertexShader = shader.vertexShader.replace(
+      "#include <begin_vertex>",
+      `
+      #include <begin_vertex>
+      
+      float normalizedY = abs(position.y) / 1.24; 
+      float swingAmp = pow(normalizedY, 1.8) * uAmp;
+      float wave = sin(position.y * uFreq - (uTime * uSpeed)) * swingAmp;
+      
+      transformed.x += wave;
+      `,
+    );
+  };
+
+  const tailGeo = useMemo(() => {
+    // FIX: Taper the cylinder all the way to 0 radius at the tip
+    const geo = new THREE.CylinderGeometry(0.26, 0.0, 1.24, 16, 32);
+    geo.translate(0, -0.62, 0);
+    return geo;
+  }, []);
+
+  // Use a squashed sphere to create the curved, organic fin membrane.
+  const finGeo = useMemo(() => {
+    // A standard sphere naturally tapers to a point at its top and bottom poles.
+    const geo = new THREE.SphereGeometry(1, 16, 32);
+
+    // Stretch and flatten the sphere into a membrane
+    geo.scale(0.06, 0.7, 0.28);
+
+    // Position the sphere coordinate space with the tail
+    geo.translate(0, -0.65, 0);
+    return geo;
+  }, []);
 
   return (
     <group position={[0, -0.01, -0.5]}>
-      {/* Segment 0 */}
-      <group ref={refs[0]}>
-        <mesh
-          position={[0, 0, -SEGMENTS[0].length * 0.5]}
-          rotation={[Math.PI / 2, 0, 0]}
-        >
-          <cylinderGeometry
-            args={[
-              SEGMENTS[0].radiusA,
-              SEGMENTS[0].radiusB,
-              SEGMENTS[0].length,
-              16,
-            ]}
+      <group rotation={[Math.PI / 2, 0, 0]}>
+        {/* Main Tail Body */}
+        <mesh geometry={tailGeo}>
+          <meshStandardMaterial
+            color={tailColor}
+            roughness={0.66}
+            onBeforeCompile={onBeforeCompile}
+            customProgramCacheKey={() => "tail-shader"}
           />
-          <meshStandardMaterial color={tailColor} roughness={0.66} />
         </mesh>
-        <mesh
-          position={[0, SEGMENTS[0].yFin, -SEGMENTS[0].length * 0.5]}
-          scale={[0.13, 1, 1.3]}
-        >
-          <sphereGeometry args={[0.16, 14, 14]} />
+
+        {/* Curved Fin Membrane */}
+        <mesh geometry={finGeo}>
           <meshStandardMaterial
             color={finColor}
             transparent
             opacity={0.72}
             emissive={finColor}
             emissiveIntensity={0.16}
+            onBeforeCompile={onBeforeCompile}
+            customProgramCacheKey={() => "fin-shader"}
           />
         </mesh>
-
-        {/* Segment 1 */}
-        <group position={[0, 0, -SEGMENTS[0].length + 0.035]} ref={refs[1]}>
-          <mesh
-            position={[0, 0, -SEGMENTS[1].length * 0.5]}
-            rotation={[Math.PI / 2, 0, 0]}
-          >
-            <cylinderGeometry
-              args={[
-                SEGMENTS[1].radiusA,
-                SEGMENTS[1].radiusB,
-                SEGMENTS[1].length,
-                16,
-              ]}
-            />
-            <meshStandardMaterial color={tailColor} roughness={0.66} />
-          </mesh>
-          <mesh
-            position={[0, SEGMENTS[1].yFin, -SEGMENTS[1].length * 0.5]}
-            scale={[0.12, 1, 1.4]}
-          >
-            <sphereGeometry args={[0.14, 14, 14]} />
-            <meshStandardMaterial
-              color={finColor}
-              transparent
-              opacity={0.7}
-              emissive={finColor}
-              emissiveIntensity={0.16}
-            />
-          </mesh>
-
-          {/* Segment 2 */}
-          <group position={[0, 0, -SEGMENTS[1].length + 0.03]} ref={refs[2]}>
-            <mesh
-              position={[0, 0, -SEGMENTS[2].length * 0.5]}
-              rotation={[Math.PI / 2, 0, 0]}
-            >
-              <cylinderGeometry
-                args={[
-                  SEGMENTS[2].radiusA,
-                  SEGMENTS[2].radiusB,
-                  SEGMENTS[2].length,
-                  14,
-                ]}
-              />
-              <meshStandardMaterial color={tailColor} roughness={0.66} />
-            </mesh>
-            <mesh
-              position={[0, SEGMENTS[2].yFin, -SEGMENTS[2].length * 0.5]}
-              scale={[0.1, 1, 1.45]}
-            >
-              <sphereGeometry args={[0.12, 14, 14]} />
-              <meshStandardMaterial
-                color={finColor}
-                transparent
-                opacity={0.72}
-                emissive={finColor}
-                emissiveIntensity={0.16}
-              />
-            </mesh>
-
-            {/* Segment 3 & Final Tail Tip */}
-            <group position={[0, 0, -SEGMENTS[2].length + 0.03]} ref={refs[3]}>
-              <mesh
-                position={[0, 0, -SEGMENTS[3].length * 0.5]}
-                rotation={[Math.PI / 2, 0, 0]}
-              >
-                <cylinderGeometry
-                  args={[
-                    SEGMENTS[3].radiusA,
-                    SEGMENTS[3].radiusB,
-                    SEGMENTS[3].length,
-                    12,
-                  ]}
-                />
-                <meshStandardMaterial color={tailColor} roughness={0.66} />
-              </mesh>
-              <mesh
-                position={[0, 0, -SEGMENTS[3].length - 0.1]}
-                scale={[0.1, 0.95, 2.2]}
-              >
-                <sphereGeometry args={[0.18, 16, 16]} />
-                <meshStandardMaterial
-                  color={finColor}
-                  transparent
-                  opacity={0.76}
-                  roughness={0.62}
-                  emissive={finColor}
-                  emissiveIntensity={0.0}
-                />
-              </mesh>
-            </group>
-          </group>
-        </group>
       </group>
     </group>
   );
