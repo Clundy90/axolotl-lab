@@ -21,27 +21,31 @@ export default function AquariumScene() {
 
   return (
     <Canvas shadows camera={{ position: [0, 0.25, 8], fov: 35 }}>
-      {backgroundUrl && (
-        <Suspense fallback={null}>
-          <AquariumBackground currentBgUrl={backgroundUrl} />
-        </Suspense>
-      )}
-      <Lighting mode={aquarium.lightMode} />
-      <BubbleStream />
-      <BackgroundFishLayer fish={aquarium.backgroundFish} />
-      <Substrate type={aquarium.substrate} />
-      <Foliage visible={aquarium.showGrass} type={ui.foliageStyle} count={14} />
-
+      {/* Detailed Comment: Wrap the entire 3D scene inside a master Suspense boundary.
+        On a fresh cache clear, components like <Environment>, <Substrate> (textures), 
+        and 3D models trigger asynchronous network requests. Without a canvas-wide 
+        Suspense wrapper, these pending promises bubble up and crash the entire React application tree.
+      */}
       <Suspense fallback={null}>
+        {backgroundUrl && <AquariumBackground currentBgUrl={backgroundUrl} />}
+
+        <Lighting mode={aquarium.lightMode} />
+        <BubbleStream />
+        <BackgroundFishLayer fish={aquarium.backgroundFish} />
+        <Substrate type={aquarium.substrate} />
+        <Foliage
+          visible={aquarium.showGrass}
+          type={ui.foliageStyle}
+          count={14}
+        />
+
         <DecorationLayer
           items={aquarium.decorations}
           onMoveDecoration={aquarium.moveDecoration}
           deleteMode={ui.deleteMode}
           onRemoveDecoration={aquarium.removeDecoration}
         />
-      </Suspense>
 
-      <Suspense fallback={null}>
         <AxolotlController
           isPetting={ui.isPetting}
           setIsPetting={ui.setIsPetting}
@@ -53,39 +57,39 @@ export default function AquariumScene() {
           currentAccessory={aquarium.currentAccessory}
           onTrickComplete={() => ui.setTrick("none")}
         />
+
+        {aquarium.foods.map((food) => (
+          <Food
+            key={food.id}
+            id={food.id}
+            spawnX={food.spawnX}
+            spawnY={food.spawnY}
+            spawnZ={food.spawnZ}
+            onConsumed={aquarium.consumeFood}
+            onMissed={aquarium.missFood}
+          />
+        ))}
+
+        {aquarium.treats.map((treat) => (
+          <Treat
+            key={treat.id}
+            id={treat.id}
+            spawnX={treat.spawnX}
+            spawnY={treat.spawnY}
+            spawnZ={treat.spawnZ}
+            onConsumed={aquarium.consumeTreat}
+            onMissed={aquarium.missTreat}
+          />
+        ))}
+
+        <Environment preset="sunset" />
+        <ContactShadows
+          position={[0, -2.45, 0]}
+          opacity={0.26}
+          scale={14}
+          blur={2.8}
+        />
       </Suspense>
-
-      {aquarium.foods.map((food) => (
-        <Food
-          key={food.id}
-          id={food.id}
-          spawnX={food.spawnX}
-          spawnY={food.spawnY}
-          spawnZ={food.spawnZ}
-          onConsumed={aquarium.consumeFood}
-          onMissed={aquarium.missFood}
-        />
-      ))}
-
-      {aquarium.treats.map((treat) => (
-        <Treat
-          key={treat.id}
-          id={treat.id}
-          spawnX={treat.spawnX}
-          spawnY={treat.spawnY}
-          spawnZ={treat.spawnZ}
-          onConsumed={aquarium.consumeTreat}
-          onMissed={aquarium.missTreat}
-        />
-      ))}
-
-      <Environment preset="sunset" />
-      <ContactShadows
-        position={[0, -2.45, 0]}
-        opacity={0.26}
-        scale={14}
-        blur={2.8}
-      />
     </Canvas>
   );
 }

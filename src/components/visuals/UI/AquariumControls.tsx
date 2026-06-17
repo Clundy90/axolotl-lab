@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import type { ColorPalette } from "../../../state/aquarium";
 
+// Detailed Comment: Import catalog selections and context states required for managing interactive layers.
 import { ACCESSORY_OPTIONS } from "../../Accessories/AccessoryCatalog";
 import { AQUARIUM_BACKGROUNDS } from "../../Background/backgroundTypes";
 import { DECORATION_OPTIONS } from "../Decorations/DecorationCatalog";
@@ -12,33 +13,11 @@ import { useAquariumUi } from "../../../context/AquariumUiContext";
 type AxolotlTab = "care" | "behavior" | "tricks" | "accessories" | "color";
 type DecorationsTab = "furniture" | "fish" | "environment" | "background";
 
-function TabButton({
-  active,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className={`rainbow-btn btn-secondary popup-tab ${active ? "btn-active" : ""}`}
-      onClick={onClick}
-    >
-      {label}
-    </button>
-  );
-}
-
-function ButtonGrid({ children }: { children: React.ReactNode }) {
-  return <div className="section-button-grid">{children}</div>;
-}
-
 export default function AquariumControls() {
   const aquarium = useAquarium();
   const ui = useAquariumUi();
+
+  // Detailed Comment: React local state is used to track the active sub-tab view inside each panel.
   const [axolotlTab, setAxolotlTab] = useState<AxolotlTab>("care");
   const [decorationsTab, setDecorationsTab] =
     useState<DecorationsTab>("furniture");
@@ -60,89 +39,87 @@ export default function AquariumControls() {
     { id: "legs", label: "Legs" },
     { id: "toes", label: "Toes" },
     { id: "eyes", label: "Eyes" },
-  ] satisfies {
-    id: keyof Omit<ColorPalette, "name">;
-    label: string;
-  }[];
+  ] satisfies { id: keyof Omit<ColorPalette, "name">; label: string }[];
 
-  const renderAxolotlTab = () => {
+  // Detailed Comment: Helper functions to render the grid contents conditionally based on the active tab state.
+  const renderAxolotlContent = () => {
     switch (axolotlTab) {
       case "care":
         return (
-          <ButtonGrid>
-            <button onClick={ui.petAxolotl} className="rainbow-btn btn-primary">
+          <div className="section-button-grid">
+            <button className="rainbow-btn btn-primary" onClick={ui.petAxolotl}>
               Pet
             </button>
             <button
-              onClick={aquarium.handleFeed}
               className="rainbow-btn btn-success"
+              onClick={aquarium.handleFeed}
             >
               Feed
             </button>
             <button
-              onClick={aquarium.handleDropTreat}
               className="rainbow-btn btn-info"
+              onClick={aquarium.handleDropTreat}
             >
               Treat
             </button>
-          </ButtonGrid>
+          </div>
         );
       case "behavior":
         return (
-          <ButtonGrid>
+          <div className="section-button-grid">
             <button
+              className={`rainbow-btn ${aquarium.mood === "excited" ? "btn-info" : "btn-secondary"}`}
               onClick={() => aquarium.setMood("excited")}
-              className={`rainbow-btn btn-secondary ${aquarium.mood === "excited" ? "btn-active" : ""}`}
             >
               Excited
             </button>
             <button
+              className={`rainbow-btn ${aquarium.mood === "chill" ? "btn-info" : "btn-secondary"}`}
               onClick={() => aquarium.setMood("chill")}
-              className={`rainbow-btn btn-secondary ${aquarium.mood === "chill" ? "btn-active" : ""}`}
             >
               Chill
             </button>
             <button
+              className={`rainbow-btn ${aquarium.mood === "lazy" ? "btn-info" : "btn-secondary"}`}
               onClick={() => aquarium.setMood("lazy")}
-              className={`rainbow-btn btn-secondary ${aquarium.mood === "lazy" ? "btn-active" : ""}`}
             >
               Lazy
             </button>
-          </ButtonGrid>
+          </div>
         );
       case "tricks":
         return (
-          <ButtonGrid>
+          <div className="section-button-grid">
             <button
-              onClick={() => ui.setTrick("barrelRoll")}
-              disabled={ui.trick !== "none"}
               className="rainbow-btn btn-info"
+              disabled={ui.trick !== "none"}
+              onClick={() => ui.setTrick("barrelRoll")}
             >
               Roll
             </button>
             <button
-              onClick={() => ui.setTrick("backflip")}
-              disabled={ui.trick !== "none"}
               className="rainbow-btn btn-info"
+              disabled={ui.trick !== "none"}
+              onClick={() => ui.setTrick("backflip")}
             >
               Flip
             </button>
             <button
-              onClick={() => ui.setTrick("spin")}
-              disabled={ui.trick !== "none"}
               className="rainbow-btn btn-info"
+              disabled={ui.trick !== "none"}
+              onClick={() => ui.setTrick("spin")}
             >
               Spin
             </button>
-          </ButtonGrid>
+          </div>
         );
       case "accessories":
         return (
-          <ButtonGrid>
+          <div className="section-button-grid">
             {ACCESSORY_OPTIONS.map((option) => (
               <button
                 key={option.type}
-                className={`rainbow-btn btn-secondary ${option.buttonClass} ${aquarium.currentAccessory === option.type ? "btn-active" : ""}`}
+                className={`rainbow-btn ${aquarium.currentAccessory === option.type ? "btn-info" : "btn-secondary"}`}
                 onClick={() => aquarium.setCurrentAccessory(option.type)}
               >
                 {option.label}
@@ -153,245 +130,238 @@ export default function AquariumControls() {
               disabled={!canClearAccessory}
               onClick={() => aquarium.setCurrentAccessory(null)}
             >
-              Remove Accessory
+              Remove
             </button>
-          </ButtonGrid>
+          </div>
         );
       case "color":
         return (
           <div className="section-stack">
-            <ButtonGrid>
+            <div className="section-button-grid">
               <button
-                type="button"
-                className={`rainbow-btn btn-secondary ${aquarium.isCustomPalette ? "btn-active" : ""}`}
+                className={`rainbow-btn ${aquarium.isCustomPalette ? "btn-info" : "btn-secondary"}`}
                 onClick={aquarium.selectCustomPalette}
               >
                 Custom
               </button>
-
               {aquarium.themePresets.map((name) => (
                 <button
                   key={name}
-                  className={`rainbow-btn btn-secondary ${
-                    !aquarium.isCustomPalette &&
-                    aquarium.colorIndex === getThemePresetIndex(name)
-                      ? "btn-active"
-                      : ""
-                  }`}
+                  className={`rainbow-btn ${!aquarium.isCustomPalette && aquarium.colorIndex === getThemePresetIndex(name) ? "btn-info" : "btn-secondary"}`}
                   onClick={() => aquarium.applyThemePreset(name)}
                 >
                   {name}
                 </button>
               ))}
-            </ButtonGrid>
-
-            {aquarium.isCustomPalette ? (
+            </div>
+            {aquarium.isCustomPalette && (
               <div className="custom-color-list">
                 {bodyParts.map((part) => (
-                  <label key={part.id} className="color-edit-row">
+                  <div key={part.id} className="color-edit-row">
                     <span>{part.label}</span>
                     <input
                       type="color"
                       value={aquarium.currentColor[part.id]}
                       onChange={(e) =>
-                        aquarium.updateCustomPalette(part.id, e.target.value)
+                        aquarium.updateCustomColor?.(part.id, e.target.value)
                       }
                     />
-                  </label>
+                  </div>
                 ))}
               </div>
-            ) : null}
+            )}
           </div>
         );
+      default:
+        return null;
     }
   };
 
-  const renderDecorationsTab = () => {
+  const renderDecorationsContent = () => {
     switch (decorationsTab) {
       case "furniture":
         return (
-          <div className="section-stack">
-            <span className="side-count">
-              Furniture {aquarium.decorations.length}/{aquarium.maxDecorations}
-            </span>
-            <ButtonGrid>
-              {furnitureOptions.map((option) => (
-                <button
-                  key={option.type}
-                  className={`rainbow-btn btn-secondary ${option.buttonClass}`}
-                  disabled={!canAddDecoration}
-                  onClick={() => aquarium.addDecoration(option.type)}
-                >
-                  + {option.label}
-                </button>
-              ))}
+          <div className="section-button-grid">
+            {furnitureOptions.map((option) => (
               <button
-                className="rainbow-btn btn-danger"
-                disabled={aquarium.decorations.length === 0}
-                onClick={aquarium.removeLastDecoration}
+                key={option.type}
+                className="rainbow-btn btn-secondary"
+                disabled={!canAddDecoration}
+                onClick={() => aquarium.addDecoration(option.type)}
               >
-                - Furniture
+                + {option.label}
               </button>
-            </ButtonGrid>
+            ))}
+            <button
+              className="rainbow-btn btn-danger"
+              disabled={aquarium.decorations.length === 0}
+              onClick={aquarium.removeLastDecoration}
+            >
+              - Remove
+            </button>
           </div>
         );
       case "fish":
         return (
-          <div className="section-stack">
-            <span className="side-count">
-              Fish {aquarium.backgroundFish.length}/{aquarium.maxBackgroundFish}
-            </span>
-            <ButtonGrid>
-              {BACKGROUND_FISH_OPTIONS.map((option) => (
-                <button
-                  key={option.type}
-                  className={`rainbow-btn btn-secondary ${option.buttonClass}`}
-                  disabled={!canAddBackgroundFish}
-                  onClick={() => aquarium.addBackgroundFish(option.type)}
-                >
-                  + {option.label}
-                </button>
-              ))}
+          <div className="section-button-grid">
+            {BACKGROUND_FISH_OPTIONS.map((option) => (
               <button
-                className="rainbow-btn btn-danger"
-                disabled={aquarium.backgroundFish.length === 0}
-                onClick={aquarium.removeLastBackgroundFish}
+                key={option.type}
+                className="rainbow-btn btn-secondary"
+                disabled={!canAddBackgroundFish}
+                onClick={() => aquarium.addBackgroundFish(option.type)}
               >
-                - Fish
+                + {option.label}
               </button>
-            </ButtonGrid>
+            ))}
+            <button
+              className="rainbow-btn btn-danger"
+              disabled={aquarium.backgroundFish.length === 0}
+              onClick={aquarium.removeLastBackgroundFish}
+            >
+              - Remove
+            </button>
           </div>
         );
       case "environment":
         return (
-          <ButtonGrid>
+          <div className="section-button-grid">
             <button
+              className="rainbow-btn btn-success"
               onClick={() =>
                 aquarium.setLightMode((mode) =>
                   mode === "day" ? "night" : "day",
                 )
               }
-              className="rainbow-btn btn-success"
             >
-              {aquarium.lightMode === "day" ? "Day" : "Night"}
+              {aquarium.lightMode === "day" ? "Day Mode" : "Night Mode"}
             </button>
             <button
-              onClick={aquarium.cycleSubstrate}
               className="rainbow-btn btn-secondary"
+              onClick={aquarium.cycleSubstrate}
             >
-              {aquarium.substrate}
+              Sand: {aquarium.substrate}
             </button>
             <button
-              onClick={ui.cycleFoliage}
               className="rainbow-btn btn-success"
               disabled={!aquarium.showGrass}
+              onClick={ui.cycleFoliage}
             >
-              {aquarium.showGrass ? ui.foliageStyle : "Off"}
+              {aquarium.showGrass
+                ? `Plants: ${ui.foliageStyle}`
+                : "Plants: Off"}
             </button>
-          </ButtonGrid>
+          </div>
         );
       case "background":
         return (
-          <ButtonGrid>
+          <div className="section-button-grid">
             {AQUARIUM_BACKGROUNDS.map((background) => (
               <button
                 key={background.id}
-                type="button"
-                className={`rainbow-btn btn-secondary ${aquarium.currentBackground.id === background.id ? "btn-active" : ""}`}
+                className={`rainbow-btn ${aquarium.currentBackground.id === background.id ? "btn-info" : "btn-secondary"}`}
                 onClick={() => aquarium.setBackgroundTexture(background.id)}
               >
                 {background.name}
               </button>
             ))}
-          </ButtonGrid>
+          </div>
         );
+      default:
+        return null;
     }
   };
 
   return (
-    <>
+    // Detailed Comment: Uses standard semantic HTML matching the coordinate styles defined in RainbowButtons.css.
+    <div className="ui-split-controls">
+      {/* Title Ribbon Bubble (Top Center) */}
       <div className="title-ribbon">
         <input
           type="text"
-          value={ui.petName}
-          onChange={(event) => ui.setPetName(event.target.value)}
-          placeholder="Name Your Axolotl"
           className="aquarium-title-input"
-          spellCheck={false}
-          maxLength={30}
+          value={ui.petName || ""}
+          onChange={(e) => ui.setPetName(e.target.value)}
+          placeholder="NAMING YOUR AQUARIUM..."
         />
       </div>
 
-      <section className="ui-split-controls">
-        <div className="side-panel left-panel ui-side-rail">
-          <div className="side-panel-header">
-            <span className="side-title">Axolotl</span>
-          </div>
-
-          <div className="popup-panel popup-panel-wide ui-side-panel">
-            <div className="popup-tab-row popup-tab-column">
-              <TabButton
-                label="Care"
-                active={axolotlTab === "care"}
-                onClick={() => setAxolotlTab("care")}
-              />
-              <TabButton
-                label="Behavior"
-                active={axolotlTab === "behavior"}
-                onClick={() => setAxolotlTab("behavior")}
-              />
-              <TabButton
-                label="Tricks"
-                active={axolotlTab === "tricks"}
-                onClick={() => setAxolotlTab("tricks")}
-              />
-              <TabButton
-                label="Accessories"
-                active={axolotlTab === "accessories"}
-                onClick={() => setAxolotlTab("accessories")}
-              />
-              <TabButton
-                label="Color"
-                active={axolotlTab === "color"}
-                onClick={() => setAxolotlTab("color")}
-              />
-            </div>
-            <div className="popup-content">{renderAxolotlTab()}</div>
-          </div>
+      {/* Left Side Rail: Axolotl Options */}
+      <div className="ui-side-rail left-panel">
+        <div className="side-panel-header">
+          <h3 className="side-title">Axolotl</h3>
         </div>
-
-        <div className="side-panel right-panel ui-side-rail">
-          <div className="side-panel-header">
-            <span className="side-title">Decorations</span>
-          </div>
-
-          <div className="popup-panel popup-panel-narrow ui-side-panel">
-            <div className="popup-tab-row popup-tab-column">
-              <TabButton
-                label="Furniture"
-                active={decorationsTab === "furniture"}
-                onClick={() => setDecorationsTab("furniture")}
-              />
-              <TabButton
-                label="Fish"
-                active={decorationsTab === "fish"}
-                onClick={() => setDecorationsTab("fish")}
-              />
-              <TabButton
-                label="Environment"
-                active={decorationsTab === "environment"}
-                onClick={() => setDecorationsTab("environment")}
-              />
-              <TabButton
-                label="Background"
-                active={decorationsTab === "background"}
-                onClick={() => setDecorationsTab("background")}
-              />
-            </div>
-            <div className="popup-content">{renderDecorationsTab()}</div>
-          </div>
+        <div className="popup-tab-row">
+          {/* Detailed Comment: Shortcuts removed; text strings expanded back into complete header terms */}
+          <button
+            className={`rainbow-btn btn-muted ${axolotlTab === "care" ? "btn-active" : ""}`}
+            onClick={() => setAxolotlTab("care")}
+          >
+            Care
+          </button>
+          <button
+            className={`rainbow-btn btn-muted ${axolotlTab === "behavior" ? "btn-active" : ""}`}
+            onClick={() => setAxolotlTab("behavior")}
+          >
+            Behavior
+          </button>
+          <button
+            className={`rainbow-btn btn-muted ${axolotlTab === "tricks" ? "btn-active" : ""}`}
+            onClick={() => setAxolotlTab("tricks")}
+          >
+            Tricks
+          </button>
+          <button
+            className={`rainbow-btn btn-muted ${axolotlTab === "accessories" ? "btn-active" : ""}`}
+            onClick={() => setAxolotlTab("accessories")}
+          >
+            Accessories
+          </button>
+          <button
+            className={`rainbow-btn btn-muted ${axolotlTab === "color" ? "btn-active" : ""}`}
+            onClick={() => setAxolotlTab("color")}
+          >
+            Color
+          </button>
         </div>
-      </section>
-    </>
+        <div className="side-divider" />
+        <div className="popup-content">{renderAxolotlContent()}</div>
+      </div>
+
+      {/* Right Side Rail: Habitat/Decorations Options */}
+      <div className="ui-side-rail right-panel">
+        <div className="side-panel-header">
+          <h3 className="side-title">Decorations</h3>
+        </div>
+        <div className="popup-tab-row">
+          <button
+            className={`rainbow-btn btn-muted ${decorationsTab === "furniture" ? "btn-active" : ""}`}
+            onClick={() => setDecorationsTab("furniture")}
+          >
+            Furniture
+          </button>
+          <button
+            className={`rainbow-btn btn-muted ${decorationsTab === "fish" ? "btn-active" : ""}`}
+            onClick={() => setDecorationsTab("fish")}
+          >
+            Fish
+          </button>
+          <button
+            className={`rainbow-btn btn-muted ${decorationsTab === "environment" ? "btn-active" : ""}`}
+            onClick={() => setDecorationsTab("environment")}
+          >
+            Environment
+          </button>
+          <button
+            className={`rainbow-btn btn-muted ${decorationsTab === "background" ? "btn-active" : ""}`}
+            onClick={() => setDecorationsTab("background")}
+          >
+            Background
+          </button>
+        </div>
+        <div className="side-divider" />
+        <div className="popup-content">{renderDecorationsContent()}</div>
+      </div>
+    </div>
   );
 }

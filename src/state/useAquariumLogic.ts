@@ -274,6 +274,44 @@ export function useAquariumLogic() {
     applyThemePreset,
     selectCustomPalette,
 
+    // Detailed Comment: Flexible translation wrapper that bridges incoming UI string identifiers
+    // into the strict keys required by the internal custom palette state.
+    updateCustomColor: (partId: string, value: string) => {
+      // Detailed Comment: Log parameters directly to the browser console to expose hidden execution paths.
+      console.log(
+        `[Aquarium Debug] updateCustomColor received partId: "${partId}", value: "${value}"`,
+      );
+
+      if (!partId) {
+        console.warn("[Aquarium Debug] received an empty or invalid partId.");
+        return;
+      }
+
+      const cleanId = partId.toLowerCase();
+      let matchedKey: keyof Omit<ColorPalette, "name"> | null = null;
+
+      // Detailed Comment: Use substring matching to catch variant names like "bodyColor" or "Body"
+      // passed down by user input event cycles.
+      if (cleanId.includes("body")) matchedKey = "body";
+      else if (cleanId.includes("gill")) matchedKey = "gills";
+      else if (cleanId.includes("fin")) matchedKey = "fins";
+      else if (cleanId.includes("tail")) matchedKey = "tail";
+      else if (cleanId.includes("leg")) matchedKey = "legs";
+      else if (cleanId.includes("toe")) matchedKey = "toes";
+      else if (cleanId.includes("eye")) matchedKey = "eyes";
+
+      if (matchedKey) {
+        console.log(
+          `[Aquarium Debug] Match confirmed! Updating palette property: "${matchedKey}"`,
+        );
+        updateCustomPalette(matchedKey, value);
+      } else {
+        console.warn(
+          `[Aquarium Debug] No internal palette match found for incoming string: "${partId}"`,
+        );
+      }
+    },
+
     /** Cycles through presets while disabling custom mode */
     cycleColor: () => {
       setIsCustomPalette(false);
