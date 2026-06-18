@@ -1,8 +1,7 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ContactShadows, Environment } from "@react-three/drei";
 import AxolotlController from "./Axolotl/AxolotlController";
-import { AquariumBackground } from "../Background/backgroundTexture";
 import Substrate from "./Environment/Substrate";
 import { BubbleStream } from "./Environment/EnvironmentEffects";
 import Foliage from "./Environment/CreateFoliage";
@@ -17,22 +16,28 @@ import { useAquariumUi } from "../../context/AquariumUiContext";
 export default function AquariumScene() {
   const aquarium = useAquarium();
   const ui = useAquariumUi();
-  const backgroundUrl = aquarium.currentBackground.url;
+
+  // Detailed Comment: Manage visibility state locally within the R3F runtime thread
+  const [renderFloor, setRenderFloor] = useState<boolean>(true);
+
+  useEffect(() => {
+    const handleToggle = (e: Event) => {
+      setRenderFloor((e as CustomEvent).detail);
+    };
+    window.addEventListener("toggle-substrate", handleToggle);
+    return () => window.removeEventListener("toggle-substrate", handleToggle);
+  }, []);
 
   return (
     <Canvas shadows camera={{ position: [0, 0.25, 8], fov: 35 }}>
-      {/* Detailed Comment: Wrap the entire 3D scene inside a master Suspense boundary.
-        On a fresh cache clear, components like <Environment>, <Substrate> (textures), 
-        and 3D models trigger asynchronous network requests. Without a canvas-wide 
-        Suspense wrapper, these pending promises bubble up and crash the entire React application tree.
-      */}
       <Suspense fallback={null}>
-        {backgroundUrl && <AquariumBackground currentBgUrl={backgroundUrl} />}
-
         <Lighting mode={aquarium.lightMode} />
         <BubbleStream />
         <BackgroundFishLayer fish={aquarium.backgroundFish} />
-        <Substrate type={aquarium.substrate} />
+
+        {/* Detailed Comment: Conditionally renders the ground layout geometry based on overlay toggle triggers */}
+        {renderFloor && <Substrate type={aquarium.substrate} />}
+
         <Foliage
           visible={aquarium.showGrass}
           type={ui.foliageStyle}

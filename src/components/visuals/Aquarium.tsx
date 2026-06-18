@@ -20,15 +20,169 @@ interface PartConfig {
   label: string;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// DESIGN TOKENS — girly kawaii palette for the aquarium UI
+// ─────────────────────────────────────────────────────────────────────────────
+const COLORS = {
+  // Banner & panel backgrounds
+  bannerBg: "linear-gradient(135deg, #FF9ECD 0%, #D48FFF 50%, #9FC8FF 100%)",
+  drawerBg: "linear-gradient(160deg, #FFD6F0 0%, #EDD6FF 60%, #D6EEFF 100%)",
+
+  // Tab category accent colors (banner buttons)
+  care: "#FF6EB4", // hot pink
+  moods: "#B57BEE", // lavender
+  tricks: "#7BBEEE", // sky blue
+  access: "#F4A261", // peachy-orange
+  color: "#EE7BBA", // bubblegum
+
+  toys: "#FF6EB4",
+  tank: "#7BCFEE",
+  bg: "#B57BEE",
+
+  // Subtle action buttons inside drawers
+  green: "#5CCC8E",
+  teal: "#3CC9C9",
+  pink: "#FF6EB4",
+  purple: "#B57BEE",
+  blue: "#5BA8E5",
+  yellow: "#F9D44A",
+  orange: "#F4925C",
+  red: "#F46C5C",
+  grey: "#9BBAC4",
+
+  // Active / selected highlight
+  active: "#FFE66D",
+  activeText: "#7A3F00",
+
+  // Text
+  white: "#FFFFFF",
+  dark: "#5C3A7A", // deep purple for contrast on light panels
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STYLE HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Pill-shaped action button used throughout the drawer panels */
+const pillBtn = (bgColor: string, isActive = false): React.CSSProperties => ({
+  padding: "9px 14px",
+  cursor: "pointer",
+  background: isActive ? COLORS.active : bgColor,
+  color: isActive ? COLORS.activeText : COLORS.white,
+  border: `3px solid ${COLORS.white}`,
+  borderRadius: "50px",
+  fontSize: "12px",
+  fontWeight: "bold",
+  textShadow: isActive ? "none" : "0 1px 2px rgba(0,0,0,0.25)",
+  boxShadow: "0 4px 0px rgba(0,0,0,0.12)",
+  transition: "transform 0.1s ease, box-shadow 0.1s ease",
+  outline: "none",
+  whiteSpace: "nowrap" as const,
+});
+
+/** Tab button sitting in the banner bar */
+const tabBtn = (
+  accentColor: string,
+  isActive: boolean,
+): React.CSSProperties => ({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: "3px",
+  padding: "8px 14px",
+  cursor: "pointer",
+  background: isActive ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.28)",
+  color: isActive ? accentColor : COLORS.white,
+  border: `3px solid ${isActive ? accentColor : "rgba(255,255,255,0.6)"}`,
+  borderRadius: "20px",
+  fontSize: "10px",
+  fontWeight: "bold",
+  textShadow: isActive ? "none" : "0 1px 2px rgba(0,0,0,0.2)",
+  boxShadow: isActive
+    ? `0 0 0 2px ${accentColor}44, 0 4px 12px rgba(0,0,0,0.15)`
+    : "0 2px 8px rgba(0,0,0,0.1)",
+  transition: "all 0.18s ease",
+  outline: "none",
+  letterSpacing: "0.4px",
+});
+
+/** The shared drawer panel that slides open beneath the banner */
+const drawerStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "88px", // just below the 80px banner
+  left: "50%",
+  transform: "translateX(-50%)",
+  background: COLORS.drawerBg,
+  border: "4px solid rgba(255,255,255,0.9)",
+  borderRadius: "24px",
+  padding: "16px 20px",
+  pointerEvents: "auto",
+  boxShadow: "0 12px 32px rgba(160,80,200,0.18), 0 4px 0px rgba(0,0,0,0.08)",
+  display: "flex",
+  flexWrap: "wrap" as const,
+  gap: "10px",
+  alignItems: "center",
+  justifyContent: "center",
+  maxWidth: "820px",
+  zIndex: 20,
+  animation: "dropIn 0.18s ease",
+};
+
+/** Inline CSS injected once for animations */
+const globalStyles = `
+  @keyframes dropIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+  @keyframes rainbowGlow {
+    0%   { box-shadow: 0 0 12px 3px #FF9ECD99, 0 4px 0 #e06aa0; }
+    33%  { box-shadow: 0 0 12px 3px #D48FFF99, 0 4px 0 #a86de0; }
+    66%  { box-shadow: 0 0 12px 3px #9FC8FF99, 0 4px 0 #6a9de0; }
+    100% { box-shadow: 0 0 12px 3px #FF9ECD99, 0 4px 0 #e06aa0; }
+  }
+  .axolotl-name-input {
+    animation: rainbowGlow 3s ease-in-out infinite;
+  }
+  .pill-btn:hover { transform: translateY(-2px); }
+  .pill-btn:active { transform: translateY(1px); box-shadow: 0 2px 0px rgba(0,0,0,0.12); }
+`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION LABEL — small divider label used inside drawers
+// ─────────────────────────────────────────────────────────────────────────────
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      style={{
+        fontSize: "11px",
+        fontWeight: "bold",
+        color: COLORS.dark,
+        opacity: 0.7,
+        letterSpacing: "0.6px",
+        width: "100%",
+        textAlign: "center",
+        userSelect: "none",
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
 function AquariumUiOverlay() {
-  // Bypassing strict types locally to use safe optional chaining mapped to your actual hooks
   const aquarium = useAquarium() as any;
   const ui = useAquariumUi() as any;
 
-  // Navigation and view state toggles
-  const [activeAxolotlTab, setActiveAxolotlTab] = useState<string | null>(null);
-  const [activeDecoTab, setActiveDecoTab] = useState<string | null>(null);
+  // Detailed Comment: activePanel tracks which top-bar tab is currently open;
+  // null means the drawer is closed. Both the left (axolotl) and right (deco)
+  // tab groups share one drawer slot — only one panel is visible at a time.
+  const [activePanel, setActivePanel] = useState<string | null>(null);
+
   const [showCustomColors, setShowCustomColors] = useState<boolean>(false);
+  const [showSubstrate, setShowSubstrate] = useState<boolean>(true);
+
+  // Detailed Comment: Tracks the text input for the main interactive floating title banner
+  const [axolotlName, setAxolotlName] = useState<string>("My Axolotl");
 
   const bodyParts: PartConfig[] = [
     { id: "body", label: "Body" },
@@ -40,630 +194,559 @@ function AquariumUiOverlay() {
     { id: "eyes", label: "Eyes" },
   ];
 
+  // Detailed Comment: Reusable button styling helper to maintain a thick, cartoony, clickable look
+  const getGameButtonStyle = (bgColor: string, isActive?: boolean) => ({
+    ...pillBtn(bgColor, isActive),
+  });
+
+  // Detailed Comment: Toggle helper — clicking the same tab again closes the drawer
+  const togglePanel = (id: string) =>
+    setActivePanel((prev) => (prev === id ? null : id));
+
   return (
-    <div
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        pointerEvents: "none", // Allows dragging and orbital controls on the 3D Canvas underneath
-        display: "flex",
-        justifyContent: "space-between",
-        padding: "30px",
-        boxSizing: "border-box",
-        fontFamily: "sans-serif",
-        zIndex: 10,
-      }}
-    >
-      {/* LEFT CONTROL PANEL: AXOLOTL CONFIGURATIONS */}
+    <>
+      {/* ── Inject global keyframe animations once ── */}
+      <style>{globalStyles}</style>
+
+      {/*
+        ═══════════════════════════════════════════════════════════════════
+        OUTER OVERLAY WRAPPER
+        Full-screen, pointer-events: none so the 3D scene stays clickable.
+        Only interactive children set pointerEvents: auto.
+        ═══════════════════════════════════════════════════════════════════
+      */}
       <div
-        className="ui-panel"
         style={{
-          background: "rgba(20, 30, 50, 0.75)",
-          backdropFilter: "blur(14px)",
-          borderRadius: "16px",
-          padding: "20px",
-          width: "290px",
-          height: "fit-content",
-          pointerEvents: "auto",
-          boxShadow: "0 12px 40px rgba(0, 0, 0, 0.4)",
-          color: "white",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          pointerEvents: "none",
+          fontFamily: '"Arial Rounded MT Bold", "Comic Sans MS", sans-serif',
+          zIndex: 10,
         }}
       >
-        <h3
-          style={{
-            margin: "0 0 4px 0",
-            letterSpacing: "1px",
-            fontSize: "16px",
-            color: "#69d2ff",
-          }}
-        >
-          AXOLOTL CONTROLS
-        </h3>
-
+        {/*
+          ─────────────────────────────────────────────────────────────────
+          TOP BANNER BAR
+          A single pill-shaped strip that holds:
+            • Left group  — axolotl care tabs (Care, Moods, Tricks, Accessories, Colors)
+            • Center      — glowing pet name input (the signature element)
+            • Right group — environment/deco tabs (Toys, Tank, Backgrounds)
+          ─────────────────────────────────────────────────────────────────
+        */}
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "8px",
+            position: "absolute",
+            top: "14px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: COLORS.bannerBg,
+            borderRadius: "50px",
+            border: "4px solid rgba(255,255,255,0.85)",
+            padding: "8px 16px",
+            pointerEvents: "auto",
+            boxShadow:
+              "0 8px 0px rgba(180,100,220,0.3), 0 14px 32px rgba(180,80,200,0.22)",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            zIndex: 30,
+            whiteSpace: "nowrap",
           }}
         >
+          {/* ── LEFT TAB GROUP: AXOLOTL ── */}
           <button
-            style={{ padding: "8px", cursor: "pointer" }}
-            onClick={() =>
-              setActiveAxolotlTab(activeAxolotlTab === "CARE" ? null : "CARE")
-            }
+            className="pill-btn"
+            style={tabBtn(COLORS.care, activePanel === "CARE")}
+            onClick={() => togglePanel("CARE")}
           >
+            <span style={{ fontSize: "16px" }}>🍖</span>
             CARE
           </button>
           <button
-            style={{ padding: "8px", cursor: "pointer" }}
-            onClick={() =>
-              setActiveAxolotlTab(
-                activeAxolotlTab === "BEHAVE" ? null : "BEHAVE",
-              )
-            }
+            className="pill-btn"
+            style={tabBtn(COLORS.moods, activePanel === "MOODS")}
+            onClick={() => togglePanel("MOODS")}
           >
-            BEHAVE
+            <span style={{ fontSize: "16px" }}>😎</span>
+            MOODS
           </button>
           <button
-            style={{ padding: "8px", cursor: "pointer" }}
-            onClick={() =>
-              setActiveAxolotlTab(
-                activeAxolotlTab === "TRICKS" ? null : "TRICKS",
-              )
-            }
+            className="pill-btn"
+            style={tabBtn(COLORS.tricks, activePanel === "TRICKS")}
+            onClick={() => togglePanel("TRICKS")}
           >
+            <span style={{ fontSize: "16px" }}>💫</span>
             TRICKS
           </button>
           <button
-            style={{ padding: "8px", cursor: "pointer" }}
-            onClick={() =>
-              setActiveAxolotlTab(
-                activeAxolotlTab === "ACCESSORY" ? null : "ACCESSORY",
-              )
-            }
+            className="pill-btn"
+            style={tabBtn(COLORS.access, activePanel === "ACCESS")}
+            onClick={() => togglePanel("ACCESS")}
           >
-            ACCESSORIES
+            <span style={{ fontSize: "16px" }}>👑</span>
+            DRESS UP
           </button>
-          <button
-            style={{ padding: "8px", gridColumn: "span 2", cursor: "pointer" }}
-            onClick={() =>
-              setActiveAxolotlTab(activeAxolotlTab === "COLOR" ? null : "COLOR")
-            }
-          >
-            COLOR METER
-          </button>
-        </div>
 
-        {/* CARE OPTIONS */}
-        {activeAxolotlTab === "CARE" && (
+          {/* ── CENTER: PET NAME INPUT (signature glowing element) ── */}
           <div
             style={{
               display: "flex",
-              flexDirection: "column",
-              gap: "6px",
-              background: "rgba(0,0,0,0.2)",
-              padding: "8px",
-              borderRadius: "8px",
+              alignItems: "center",
+              gap: "8px",
+              margin: "0 6px",
             }}
           >
+            <span style={{ fontSize: "20px" }}>🌸</span>
+            <input
+              type="text"
+              value={axolotlName}
+              onChange={(e) => setAxolotlName(e.target.value)}
+              placeholder="Name your axolotl!"
+              className="axolotl-name-input"
+              style={{
+                background: "rgba(255,255,255,0.88)",
+                border: "3px solid #fff",
+                borderRadius: "30px",
+                color: COLORS.dark,
+                fontSize: "16px",
+                fontWeight: "bold",
+                outline: "none",
+                width: "190px",
+                padding: "6px 16px",
+                textAlign: "center",
+                fontFamily: "inherit",
+                letterSpacing: "0.3px",
+              }}
+            />
+            <span style={{ fontSize: "20px" }}>🌸</span>
+          </div>
+
+          <button
+            className="pill-btn"
+            style={tabBtn(COLORS.color, activePanel === "COLOR")}
+            onClick={() => togglePanel("COLOR")}
+          >
+            <span style={{ fontSize: "16px" }}>🎨</span>
+            COLORS
+          </button>
+
+          {/* ── RIGHT TAB GROUP: TANK / DECO ── */}
+          <button
+            className="pill-btn"
+            style={tabBtn(COLORS.toys, activePanel === "TOYS")}
+            onClick={() => togglePanel("TOYS")}
+          >
+            <span style={{ fontSize: "16px" }}>🏰</span>
+            TOYS
+          </button>
+          <button
+            className="pill-btn"
+            style={tabBtn(COLORS.tank, activePanel === "TANK")}
+            onClick={() => togglePanel("TANK")}
+          >
+            <span style={{ fontSize: "16px" }}>🌿</span>
+            TANK
+          </button>
+          <button
+            className="pill-btn"
+            style={tabBtn(COLORS.bg, activePanel === "BG")}
+            onClick={() => togglePanel("BG")}
+          >
+            <span style={{ fontSize: "16px" }}>🖼️</span>
+            SCENES
+          </button>
+        </div>
+
+        {/*
+          ─────────────────────────────────────────────────────────────────
+          DRAWER PANELS
+          One shared slot — only the active panel renders, centered under
+          the banner. Each panel uses drawerStyle as its base.
+          All logic hookups are identical to the original side panels.
+          ─────────────────────────────────────────────────────────────────
+        */}
+
+        {/* ── CARE PANEL ── */}
+        {activePanel === "CARE" && (
+          <div style={drawerStyle}>
+            <SectionLabel>🌟 LOOK AFTER YOUR AXOLOTL 🌟</SectionLabel>
             <button
-              style={{ padding: "6px" }}
+              className="pill-btn"
+              style={pillBtn(COLORS.green)}
               onClick={() => aquarium.handleFeed?.()}
             >
-              FEED FOOD
+              🍖 Feed Food
             </button>
             <button
-              style={{ padding: "6px" }}
+              className="pill-btn"
+              style={pillBtn(COLORS.teal)}
               onClick={() => aquarium.handleDropTreat?.()}
             >
-              GIVE TREAT
+              🍬 Give a Treat
             </button>
-
-            {/* Action Pet Trigger: Momentary regular button instead of a toggle */}
             <button
-              style={{
-                padding: "6px",
-                backgroundColor: ui.isPetting
-                  ? "#ff69b4"
-                  : "rgba(255,255,255,0.15)",
-                fontWeight: ui.isPetting ? "bold" : "normal",
-              }}
+              className="pill-btn"
+              style={pillBtn(ui.isPetting ? COLORS.care : COLORS.pink)}
               onClick={() => {
                 if (ui.setIsPetting) {
                   ui.setIsPetting(true);
-                  // Detailed Comment: Automatically resets petting back to false after animation duration
                   setTimeout(() => ui.setIsPetting(false), 2500);
                 }
               }}
             >
-              {ui.isPetting ? "🐾 PETTING..." : "PET AXOLOTL"}
+              {ui.isPetting ? "❤️ Petting..." : "👋 Pet Axolotl"}
             </button>
           </div>
         )}
 
-        {/* BEHAVIOR MOODS */}
-        {activeAxolotlTab === "BEHAVE" && (
-          <div
-            style={{
-              display: "flex",
-              gap: "6px",
-              background: "rgba(0,0,0,0.2)",
-              padding: "8px",
-              borderRadius: "8px",
-            }}
-          >
+        {/* ── MOODS PANEL ── */}
+        {activePanel === "MOODS" && (
+          <div style={drawerStyle}>
+            <SectionLabel>💜 PICK A MOOD 💜</SectionLabel>
             {["chill", "excited", "lazy"].map((mood) => (
               <button
                 key={mood}
-                style={{
-                  flex: 1,
-                  padding: "6px",
-                  fontSize: "11px",
-                  backgroundColor: aquarium.mood === mood ? "#2a6bbd" : "",
-                }}
+                className="pill-btn"
+                style={pillBtn(COLORS.blue, aquarium.mood === mood)}
                 onClick={() => aquarium.setMood?.(mood)}
               >
-                {mood.toUpperCase()}
+                {mood === "chill"
+                  ? "😎 Chill"
+                  : mood === "excited"
+                    ? "🤪 Excited"
+                    : "😴 Lazy"}
               </button>
             ))}
           </div>
         )}
 
-        {/* ANIMATION TRICKS */}
-        {activeAxolotlTab === "TRICKS" && (
-          <div
-            style={{
-              display: "flex",
-              gap: "6px",
-              background: "rgba(0,0,0,0.2)",
-              padding: "8px",
-              borderRadius: "8px",
-            }}
-          >
+        {/* ── TRICKS PANEL ── */}
+        {activePanel === "TRICKS" && (
+          <div style={drawerStyle}>
+            <SectionLabel>✨ TEACH SOME TRICKS ✨</SectionLabel>
             <button
-              style={{ flex: 1, padding: "6px", fontSize: "11px" }}
+              className="pill-btn"
+              style={pillBtn(COLORS.purple)}
               onClick={() => ui.setTrick?.("barrelRoll")}
             >
-              ROLL
+              🌀 Roll
             </button>
             <button
-              style={{ flex: 1, padding: "6px", fontSize: "11px" }}
+              className="pill-btn"
+              style={pillBtn(COLORS.purple)}
               onClick={() => ui.setTrick?.("backflip")}
             >
-              FLIP
+              🤸 Flip
             </button>
             <button
-              style={{ flex: 1, padding: "6px", fontSize: "11px" }}
+              className="pill-btn"
+              style={pillBtn(COLORS.purple)}
               onClick={() => ui.setTrick?.("spin")}
             >
-              SPIN
+              💫 Spin
+            </button>
+            <button
+              className="pill-btn"
+              style={pillBtn(COLORS.moods)}
+              onClick={() => ui.setTrick?.("toot")}
+            >
+              🎵 Toot
             </button>
           </div>
         )}
 
-        {/* VISUAL ACCESSORIES */}
-        {activeAxolotlTab === "ACCESSORY" && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "6px",
-              background: "rgba(0,0,0,0.2)",
-              padding: "8px",
-              borderRadius: "8px",
-            }}
-          >
+        {/* ── ACCESSORIES / DRESS UP PANEL ── */}
+        {activePanel === "ACCESS" && (
+          <div style={drawerStyle}>
+            <SectionLabel>👑 DRESS YOUR AXOLOTL 👑</SectionLabel>
             {["crown", "glasses", "headphones", "topHat", "none"].map((acc) => (
               <button
                 key={acc}
-                style={{
-                  padding: "6px",
-                  fontSize: "11px",
-                  gridColumn: acc === "none" ? "span 2" : "auto",
-                  backgroundColor:
-                    aquarium.currentAccessory === acc ? "#2a6bbd" : "",
-                }}
+                className="pill-btn"
+                style={pillBtn(
+                  COLORS.yellow,
+                  aquarium.currentAccessory === acc,
+                )}
                 onClick={() =>
                   aquarium.setCurrentAccessory?.(acc === "none" ? null : acc)
                 }
               >
-                {acc.toUpperCase()}
+                {acc === "crown"
+                  ? "👑 Crown"
+                  : acc === "glasses"
+                    ? "🕶️ Glasses"
+                    : acc === "headphones"
+                      ? "🎧 Headphones"
+                      : acc === "topHat"
+                        ? "🎩 Top Hat"
+                        : "❌ No Hat"}
               </button>
             ))}
           </div>
         )}
 
-        {/* COLOR SCHEMES & PICKERS */}
-        {activeAxolotlTab === "COLOR" && (
-          <div
-            style={{
-              background: "rgba(0,0,0,0.2)",
-              padding: "8px",
-              borderRadius: "8px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "6px",
-            }}
-          >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "6px",
+        {/* ── COLORS PANEL ── */}
+        {activePanel === "COLOR" && (
+          <div style={drawerStyle}>
+            <SectionLabel>🎨 PICK AXOLOTL COLORS 🎨</SectionLabel>
+
+            {/* Theme presets */}
+            <button
+              className="pill-btn"
+              style={pillBtn(COLORS.care, aquarium.isCustomPalette)}
+              onClick={() => {
+                setShowCustomColors(!showCustomColors);
+                aquarium.selectCustomPalette?.();
               }}
             >
-              <button
-                style={{
-                  padding: "6px",
-                  fontSize: "11px",
-                  backgroundColor: aquarium.isCustomPalette ? "#2a6bbd" : "",
-                }}
-                onClick={() => {
-                  setShowCustomColors(!showCustomColors);
-                  aquarium.selectCustomPalette?.();
-                }}
-              >
-                CUSTOM
-              </button>
-              <button
-                style={{ padding: "6px", fontSize: "11px" }}
-                onClick={() => {
-                  setShowCustomColors(false);
-                  aquarium.applyThemePreset?.("Bubblegum");
-                }}
-              >
-                BUBBLEGUM
-              </button>
-              <button
-                style={{ padding: "6px", fontSize: "11px" }}
-                onClick={() => {
-                  setShowCustomColors(false);
-                  aquarium.applyThemePreset?.("Cosmo");
-                }}
-              >
-                COSMO
-              </button>
-              <button
-                style={{ padding: "6px", fontSize: "11px" }}
-                onClick={() => {
-                  setShowCustomColors(false);
-                  aquarium.applyThemePreset?.("Deep Sea");
-                }}
-              >
-                DEEP SEA
-              </button>
-            </div>
+              🎨 Custom
+            </button>
+            <button
+              className="pill-btn"
+              style={pillBtn("#F48FB1")}
+              onClick={() => {
+                setShowCustomColors(false);
+                aquarium.applyThemePreset?.("Bubblegum");
+              }}
+            >
+              🍭 Pink
+            </button>
+            <button
+              className="pill-btn"
+              style={pillBtn(COLORS.purple)}
+              onClick={() => {
+                setShowCustomColors(false);
+                aquarium.applyThemePreset?.("Cosmo");
+              }}
+            >
+              ⭐ Galaxy
+            </button>
+            <button
+              className="pill-btn"
+              style={pillBtn(COLORS.blue)}
+              onClick={() => {
+                setShowCustomColors(false);
+                aquarium.applyThemePreset?.("Deep Sea");
+              }}
+            >
+              🌊 Ocean
+            </button>
 
-            {showCustomColors && (
-              <div
-                style={{
-                  maxHeight: "140px",
-                  overflowY: "auto",
-                  marginTop: "6px",
-                  borderTop: "1px solid rgba(255,255,255,0.2)",
-                  paddingTop: "6px",
-                }}
-              >
-                {bodyParts.map((part) => (
-                  <div
-                    key={part.id}
+            {/* Custom per-part color pickers — shown when "Custom" is toggled */}
+            {showCustomColors &&
+              bodyParts.map((part) => (
+                <div
+                  key={part.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    background: "rgba(255,255,255,0.55)",
+                    borderRadius: "30px",
+                    padding: "5px 14px",
+                    border: "2px solid rgba(255,255,255,0.9)",
+                  }}
+                >
+                  <span
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      margin: "4px 0",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      color: COLORS.dark,
+                      minWidth: "52px",
                     }}
                   >
-                    <span style={{ fontSize: "12px" }}>{part.label}</span>
-                    <input
-                      type="color"
-                      value={aquarium.currentColor?.[part.id] || "#ffffff"}
-                      onChange={(e) =>
-                        aquarium.updateCustomColor?.(part.id, e.target.value)
-                      }
-                      style={{
-                        border: "none",
-                        width: "30px",
-                        height: "20px",
-                        cursor: "pointer",
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+                    {part.label}
+                  </span>
+                  <input
+                    type="color"
+                    value={aquarium.currentColor?.[part.id] || "#ffffff"}
+                    onChange={(e) =>
+                      aquarium.updateCustomColor?.(part.id, e.target.value)
+                    }
+                    style={{
+                      border: "2px solid white",
+                      borderRadius: "6px",
+                      width: "34px",
+                      height: "24px",
+                      cursor: "pointer",
+                      padding: 0,
+                    }}
+                  />
+                </div>
+              ))}
           </div>
         )}
-      </div>
 
-      {/* RIGHT CONTROL PANEL: ENVIRONMENTS & OBJECT SPAWNERS */}
-      <div
-        className="ui-panel"
-        style={{
-          background: "rgba(20, 30, 50, 0.75)",
-          backdropFilter: "blur(14px)",
-          borderRadius: "16px",
-          padding: "20px",
-          width: "290px",
-          height: "fit-content",
-          pointerEvents: "auto",
-          boxShadow: "0 12px 40px rgba(0, 0, 0, 0.4)",
-          color: "white",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-        }}
-      >
-        <h3
-          style={{
-            margin: "0 0 4px 0",
-            letterSpacing: "1px",
-            fontSize: "16px",
-            color: "#69d2ff",
-          }}
-        >
-          TANK DECORATIONS
-        </h3>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "8px",
-          }}
-        >
-          <button
-            style={{ padding: "8px", cursor: "pointer" }}
-            onClick={() =>
-              setActiveDecoTab(
-                activeDecoTab === "FURNITURE" ? null : "FURNITURE",
-              )
-            }
-          >
-            FURNITURE
-          </button>
-          <button
-            style={{ padding: "8px", cursor: "pointer" }}
-            onClick={() =>
-              setActiveDecoTab(activeDecoTab === "ENV" ? null : "ENV")
-            }
-          >
-            ENVIRONMENT
-          </button>
-          <button
-            style={{ padding: "8px", gridColumn: "span 2", cursor: "pointer" }}
-            onClick={() =>
-              setActiveDecoTab(activeDecoTab === "BG" ? null : "BG")
-            }
-          >
-            BACKGROUNDS
-          </button>
-        </div>
-
-        {/* ITEM MESH SPAWNING AND REMOVAL */}
-        {activeDecoTab === "FURNITURE" && (
-          <div
-            style={{
-              background: "rgba(0,0,0,0.2)",
-              padding: "8px",
-              borderRadius: "8px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "6px",
-            }}
-          >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "6px",
-              }}
-            >
-              <button
-                style={{ padding: "6px", fontSize: "11px" }}
-                onClick={() => aquarium.addDecoration?.("castle")}
-              >
-                + CASTLE
-              </button>
-              <button
-                style={{ padding: "6px", fontSize: "11px" }}
-                onClick={() => aquarium.addDecoration?.("log")}
-              >
-                + LOG
-              </button>
-              <button
-                style={{ padding: "6px", fontSize: "11px" }}
-                onClick={() => aquarium.addDecoration?.("treasureChest")}
-              >
-                + CHEST
-              </button>
-              <button
-                style={{ padding: "6px", fontSize: "11px" }}
-                onClick={() => aquarium.addDecoration?.("brainCoral")}
-              >
-                + CORAL
-              </button>
-            </div>
+        {/* ── TOYS PANEL ── */}
+        {activePanel === "TOYS" && (
+          <div style={drawerStyle}>
+            <SectionLabel>🏰 ADD TOYS TO THE TANK 🏰</SectionLabel>
             <button
-              style={{
-                padding: "6px",
-                marginTop: "4px",
-                backgroundColor: ui.deleteMode
-                  ? "#cc3333"
-                  : "rgba(255,255,255,0.15)",
-                fontWeight: ui.deleteMode ? "bold" : "normal",
-              }}
+              className="pill-btn"
+              style={pillBtn(COLORS.orange)}
+              onClick={() => aquarium.addDecoration?.("castle")}
+            >
+              🏰 Castle
+            </button>
+            <button
+              className="pill-btn"
+              style={pillBtn("#A1816A")}
+              onClick={() => aquarium.addDecoration?.("log")}
+            >
+              Log
+            </button>
+            <button
+              className="pill-btn"
+              style={pillBtn(COLORS.yellow)}
+              onClick={() => aquarium.addDecoration?.("treasureChest")}
+            >
+              💎 Treasure Chest
+            </button>
+            <button
+              className="pill-btn"
+              style={pillBtn(COLORS.care)}
+              onClick={() => aquarium.addDecoration?.("brainCoral")}
+            >
+              Brain Coral
+            </button>
+            <button
+              className="pill-btn"
+              style={pillBtn(ui.deleteMode ? COLORS.red : COLORS.grey)}
               onClick={() => ui.setDeleteMode?.(!ui.deleteMode)}
             >
-              {ui.deleteMode ? "EXIT REMOVE MODE" : "REMOVE MESH OBJECT"}
+              {ui.deleteMode ? "✅ Done Removing" : "🗑️ Remove a Toy"}
             </button>
           </div>
         )}
 
-        {/* SUBSTRATE MATERIALS, LIGHTING, FOLIAGE, AND BACKGROUND FISH */}
-        {activeDecoTab === "ENV" && (
-          <div
-            style={{
-              background: "rgba(0,0,0,0.2)",
-              padding: "8px",
-              borderRadius: "8px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px",
-            }}
-          >
+        {/* ── TANK / ENVIRONMENT PANEL ── */}
+        {activePanel === "TANK" && (
+          <div style={drawerStyle}>
+            <SectionLabel>🌿 TANK SETTINGS 🌿</SectionLabel>
+
+            {/* Day / Night toggle */}
             <button
-              style={{
-                padding: "8px",
-                fontWeight: "bold",
-                backgroundColor: "rgba(105, 210, 255, 0.2)",
-              }}
+              className="pill-btn"
+              style={pillBtn(COLORS.blue)}
               onClick={() =>
                 aquarium.setLightMode?.(
                   aquarium.lightMode === "day" ? "night" : "day",
                 )
               }
             >
-              TOGGLE LIGHTS ({String(aquarium.lightMode || "day").toUpperCase()}
-              )
+              {aquarium.lightMode === "night" ? "🌙 Night" : "☀️ Day"} — tap to
+              switch!
             </button>
 
-            <div>
-              <span
-                style={{
-                  fontSize: "11px",
-                  color: "#aaa",
-                  display: "block",
-                  marginBottom: "4px",
-                }}
-              >
-                SUBSTRATE MATERIAL:{" "}
-                {String(aquarium.substrate || "GRAVEL").toUpperCase()}
-              </span>
-              <button
-                style={{ width: "100%", padding: "6px", fontSize: "11px" }}
-                onClick={() => aquarium.cycleSubstrate?.()}
-              >
-                CYCLE SUBSTRATE
-              </button>
-            </div>
-
-            {/* Detailed Comment: Added clean controls for the ambient background school of fish */}
-            <div>
-              <span
-                style={{
-                  fontSize: "11px",
-                  color: "#aaa",
-                  display: "block",
-                  marginBottom: "4px",
-                }}
-              >
-                BACKGROUND FISH ({aquarium.backgroundFish?.length || 0} /{" "}
-                {aquarium.maxBackgroundFish || 5})
-              </span>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr 1fr",
-                  gap: "4px",
-                }}
-              >
-                <button
-                  style={{ padding: "5px", fontSize: "10px" }}
-                  onClick={() => aquarium.addBackgroundFish?.("blue")}
-                >
-                  + BLUE
-                </button>
-                <button
-                  style={{ padding: "5px", fontSize: "10px" }}
-                  onClick={() => aquarium.addBackgroundFish?.("green")}
-                >
-                  + GREEN
-                </button>
-                <button
-                  style={{
-                    padding: "5px",
-                    fontSize: "10px",
-                    backgroundColor: "rgba(200,50,50,0.2)",
-                  }}
-                  onClick={() => aquarium.removeLastBackgroundFish?.()}
-                >
-                  - REMOVE
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <span
-                style={{
-                  fontSize: "11px",
-                  color: "#aaa",
-                  display: "block",
-                  marginBottom: "4px",
-                }}
-              >
-                PLANT STRAND TYPE:{" "}
-                {String(ui.foliageStyle || "GRASS").toUpperCase()}
-              </span>
-              <button
-                style={{ width: "100%", padding: "6px", fontSize: "11px" }}
-                onClick={() => ui.cycleFoliage?.()}
-              >
-                CYCLE PLANT STYLE
-              </button>
-            </div>
-
+            {/* Floor mat */}
             <button
-              style={{ padding: "6px", marginTop: "2px" }}
+              className="pill-btn"
+              style={pillBtn(COLORS.teal)}
+              onClick={() => aquarium.cycleSubstrate?.()}
+            >
+              🔄 Floor Mat:{" "}
+              {String(aquarium.substrate || "GRAVEL").toUpperCase()}
+            </button>
+            <button
+              className="pill-btn"
+              style={pillBtn(showSubstrate ? COLORS.yellow : COLORS.grey)}
+              onClick={() => {
+                const nextState = !showSubstrate;
+                setShowSubstrate(nextState);
+                window.dispatchEvent(
+                  new CustomEvent("toggle-substrate", { detail: nextState }),
+                );
+              }}
+            >
+              {showSubstrate ? "👁️ Hide Mat" : "👁️ Show Mat"}
+            </button>
+
+            {/* Fish */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                background: "rgba(255,255,255,0.45)",
+                borderRadius: "30px",
+                padding: "6px 14px",
+                border: "2px solid rgba(255,255,255,0.8)",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "12px",
+                  fontWeight: "bold",
+                  color: COLORS.dark,
+                }}
+              >
+                🐟 Fish ({aquarium.backgroundFish?.length || 0}/
+                {aquarium.maxBackgroundFish || 5}):
+              </span>
+              <button
+                className="pill-btn"
+                style={{ ...pillBtn(COLORS.blue), padding: "6px 10px" }}
+                onClick={() => aquarium.addBackgroundFish?.("blue")}
+              >
+                🔵
+              </button>
+              <button
+                className="pill-btn"
+                style={{ ...pillBtn(COLORS.green), padding: "6px 10px" }}
+                onClick={() => aquarium.addBackgroundFish?.("green")}
+              >
+                🟢
+              </button>
+              <button
+                className="pill-btn"
+                style={{ ...pillBtn("#A1816A"), padding: "6px 10px" }}
+                onClick={() => aquarium.addBackgroundFish?.("brown")}
+              >
+                🟤
+              </button>
+              <button
+                className="pill-btn"
+                style={{ ...pillBtn(COLORS.red), padding: "6px 10px" }}
+                onClick={() => aquarium.removeLastBackgroundFish?.()}
+              >
+                ❌
+              </button>
+            </div>
+
+            {/* Plants */}
+            <button
+              className="pill-btn"
+              style={pillBtn(COLORS.green)}
+              onClick={() => ui.cycleFoliage?.()}
+            >
+              🌿 Leaves: {String(ui.foliageStyle || "GRASS").toUpperCase()}
+            </button>
+            <button
+              className="pill-btn"
+              style={pillBtn(COLORS.orange)}
               onClick={() => aquarium.setShowGrass?.(!aquarium.showGrass)}
             >
-              TOGGLE VEGETATION ({aquarium.showGrass ? "ON" : "OFF"})
+              🌱 Plants: {aquarium.showGrass ? "ON" : "OFF"}
             </button>
           </div>
         )}
 
-        {/* DYNAMIC BACKGROUND SCENE MAPPING */}
-        {activeDecoTab === "BG" && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "6px",
-              background: "rgba(0,0,0,0.2)",
-              padding: "8px",
-              borderRadius: "8px",
-              maxHeight: "180px",
-              overflowY: "auto",
-            }}
-          >
-            {/* Detailed Comment: Loops dynamically over the valid context configuration list to prevent name mismatches */}
+        {/* ── BACKGROUNDS / SCENES PANEL ── */}
+        {activePanel === "BG" && (
+          <div style={drawerStyle}>
+            <SectionLabel>🖼️ PICK A BACKGROUND SCENE 🖼️</SectionLabel>
             {(aquarium.backgroundOptions || []).map((bg: any) => (
               <button
                 key={bg.id}
+                className="pill-btn"
                 onClick={() => aquarium.setBackgroundTexture?.(bg.id)}
-                style={{
-                  fontSize: "11px",
-                  padding: "6px",
-                  backgroundColor:
-                    aquarium.currentBackground?.id === bg.id
-                      ? "#2a6bbd"
-                      : "rgba(255,255,255,0.08)",
-                  border:
-                    aquarium.currentBackground?.id === bg.id
-                      ? "1px solid #69d2ff"
-                      : "1px solid transparent",
-                  color: "white",
-                  cursor: "pointer",
-                }}
+                style={pillBtn(
+                  COLORS.purple,
+                  aquarium.currentBackground?.id === bg.id,
+                )}
               >
                 {bg.name || String(bg.id).toUpperCase()}
               </button>
@@ -671,11 +754,11 @@ function AquariumUiOverlay() {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }
 
-function AquariumShell() {
+function AquariumShell({ children }: { children: React.ReactNode }) {
   const aquarium = useAquarium();
   const hasBackgroundTexture = Boolean(aquarium.currentBackground?.url);
 
@@ -709,8 +792,7 @@ function AquariumShell() {
         overflow: "hidden",
       }}
     >
-      <AquariumScene />
-      <AquariumUiOverlay />
+      {children}
     </div>
   );
 }
@@ -719,7 +801,10 @@ export default function Aquarium() {
   return (
     <AquariumProvider>
       <AquariumUiProvider>
-        <AquariumShell />
+        <AquariumShell>
+          <AquariumScene />
+          <AquariumUiOverlay />
+        </AquariumShell>
       </AquariumUiProvider>
     </AquariumProvider>
   );
