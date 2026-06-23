@@ -430,6 +430,7 @@ function AquariumUiOverlay() {
             <button
               className="pill-btn"
               style={pillBtn(COLORS.purple)}
+              disabled={ui.trick !== "none"}
               onClick={() => ui.setTrick?.("barrelRoll")}
             >
               🌀 Roll
@@ -437,6 +438,7 @@ function AquariumUiOverlay() {
             <button
               className="pill-btn"
               style={pillBtn(COLORS.purple)}
+              disabled={ui.trick !== "none"}
               onClick={() => ui.setTrick?.("backflip")}
             >
               🤸 Flip
@@ -444,6 +446,7 @@ function AquariumUiOverlay() {
             <button
               className="pill-btn"
               style={pillBtn(COLORS.purple)}
+              disabled={ui.trick !== "none"}
               onClick={() => ui.setTrick?.("spin")}
             >
               💫 Spin
@@ -451,6 +454,7 @@ function AquariumUiOverlay() {
             <button
               className="pill-btn"
               style={pillBtn(COLORS.moods)}
+              disabled={ui.trick !== "none"}
               onClick={() => ui.setTrick?.("toot")}
             >
               🎵 Toot

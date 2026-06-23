@@ -64,7 +64,7 @@ export default function AxolotlController({
         {/* Feeding Logic */}
         <FeedingHandler rootRef={rootRef} isFeeding={isFeeding} />
 
-        {/* Enhanced Trick Logic: Now supports barrelRoll, backflip, and spin */}
+        {/* Enhanced Trick Logic: Now supports barrelRoll, backflip, spin, and toot */}
         <TrickHandler
           rootRef={rootRef}
           trick={trick}

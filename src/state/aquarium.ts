@@ -5,7 +5,12 @@
 
 export type AxolotlMood = "chill" | "excited" | "lazy";
 export type LightMode = "day" | "night";
-export type AxolotlTrick = "none" | "barrelRoll" | "backflip" | "spin";
+export type AxolotlTrick =
+  | "none"
+  | "barrelRoll"
+  | "backflip"
+  | "spin"
+  | "toot";
 export type FoliageType = "grass" | "kelp" | "vines";
 export type FeedType = "food" | "treat";
 export type SubstrateType = "gravel" | "sand" | "mud";

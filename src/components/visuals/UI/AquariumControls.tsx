@@ -111,6 +111,13 @@ export default function AquariumControls() {
             >
               Spin
             </button>
+            <button
+              className="rainbow-btn btn-info"
+              disabled={ui.trick !== "none"}
+              onClick={() => ui.setTrick("toot")}
+            >
+              Toot
+            </button>
           </div>
         );
       case "accessories":

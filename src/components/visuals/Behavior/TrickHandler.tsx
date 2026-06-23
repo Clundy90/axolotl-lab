@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { useState, type RefObject, useEffect } from "react";
+import { useState, type RefObject, useEffect, useMemo } from "react";
 
 // Exported the type so we can use it in our UI and state files
-export type TrickType = "none" | "barrelRoll" | "backflip" | "spin";
+export type TrickType = "none" | "barrelRoll" | "backflip" | "spin" | "toot";
 
 interface TrickProps {
   rootRef: RefObject<THREE.Group>;
@@ -19,6 +19,22 @@ interface TrickProps {
  */
 export function TrickHandler({ rootRef, trick, onTrickComplete }: TrickProps) {
   const [trickProgress, setTrickProgress] = useState(0);
+  const tootPuffs = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, index) => {
+        const angle = (index / 12) * Math.PI * 2;
+        const lane = index % 3;
+
+        return {
+          angle,
+          drift: 0.42 + lane * 0.16,
+          lift: -0.06 + lane * 0.08,
+          radius: 0.045 + (index % 4) * 0.013,
+          delay: index * 0.018,
+        };
+      }),
+    [],
+  );
 
   // We must capture the base position and rotation exactly when a trick starts.
   // This gives us a safe anchor point to animate relative to, and a safe
@@ -84,6 +100,15 @@ export function TrickHandler({ rootRef, trick, onTrickComplete }: TrickProps) {
       // Add a tiny energetic hop during the spin.
       rootRef.current.position.y =
         baseTransform.y + Math.sin(newProgress * Math.PI) * 0.2;
+    } else if (trick === "toot") {
+      const recoil = Math.sin(newProgress * Math.PI * 4) * (1 - newProgress);
+
+      rootRef.current.position.y =
+        baseTransform.y + Math.sin(newProgress * Math.PI) * 0.16;
+      rootRef.current.rotation.x = baseTransform.rotX + recoil * 0.22;
+      rootRef.current.rotation.y =
+        baseTransform.rotY - Math.sin(newProgress * Math.PI) * 0.18;
+      rootRef.current.rotation.z = baseTransform.rotZ + recoil * 0.08;
     }
 
     // Check if the animation cycle is complete
@@ -102,5 +127,41 @@ export function TrickHandler({ rootRef, trick, onTrickComplete }: TrickProps) {
     }
   });
 
-  return null;
+  if (trick !== "toot") {
+    return null;
+  }
+
+  return (
+    <group position={[0, -0.18, -0.62]}>
+      {tootPuffs.map((puff, index) => {
+        const puffProgress = Math.max(
+          0,
+          Math.min((trickProgress - puff.delay) / 0.72, 1),
+        );
+        const fade = 1 - puffProgress;
+        const wobble = Math.sin((trickProgress * 18 + index) * Math.PI) * 0.05;
+        const spread = Math.sin(puff.angle) * puff.drift * puffProgress;
+
+        return (
+          <mesh
+            key={index}
+            position={[
+              spread,
+              puff.lift + wobble + puffProgress * 0.42,
+              -puffProgress * 1.15 - Math.cos(puff.angle) * 0.18,
+            ]}
+            scale={1 + puffProgress * 1.8}
+          >
+            <sphereGeometry args={[puff.radius, 12, 12]} />
+            <meshBasicMaterial
+              color={index % 2 === 0 ? "#b9f58c" : "#f7e78a"}
+              transparent
+              opacity={Math.max(0, fade * 0.52)}
+              depthWrite={false}
+            />
+          </mesh>
+        );
+      })}
+    </group>
+  );
 }
