@@ -68,7 +68,7 @@ export function TrickHandler({ rootRef, trick, onTrickComplete }: TrickProps) {
 
     // Progress goes from 0 to 1. The multiplier controls the trick duration.
     // 1.2 means the trick takes about 0.83 seconds (1 / 1.2).
-    const speedMultiplier = 1.2;
+    const speedMultiplier = trick === "toot" ? 0.72 : 1.2;
     const newProgress = Math.min(trickProgress + delta * speedMultiplier, 1.0);
 
     // Ease In/Out Sine function. This makes the animation start slowly,

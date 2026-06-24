@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import AquariumScene from "./AquariumScene";
+import MusicPlayer from "../Audio/MusicPlayer";
 import { AquariumProvider, useAquarium } from "../../context/AquariumContext";
 import {
   AquariumUiProvider,
@@ -358,6 +359,10 @@ function AquariumUiOverlay() {
             <span style={{ fontSize: "16px" }}>🖼️</span>
             SCENES
           </button>
+          <MusicPlayer
+            className="pill-btn"
+            style={tabBtn(COLORS.teal, false)}
+          />
         </div>
 
         {/*
@@ -390,12 +395,7 @@ function AquariumUiOverlay() {
             <button
               className="pill-btn"
               style={pillBtn(ui.isPetting ? COLORS.care : COLORS.pink)}
-              onClick={() => {
-                if (ui.setIsPetting) {
-                  ui.setIsPetting(true);
-                  setTimeout(() => ui.setIsPetting(false), 2500);
-                }
-              }}
+              onClick={() => ui.petAxolotl?.()}
             >
               {ui.isPetting ? "❤️ Petting..." : "👋 Pet Axolotl"}
             </button>

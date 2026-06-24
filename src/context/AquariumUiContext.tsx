@@ -1,5 +1,12 @@
-import React, { createContext, useContext, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+} from "react";
 import type { AxolotlTrick, FoliageType } from "../state/aquarium";
+import { playTootSound } from "../utils/tootSound";
 
 interface AquariumUiContextValue {
   petName: string;
@@ -27,14 +34,45 @@ export function AquariumUiProvider({
   const [isPetting, setIsPetting] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
   const [foliageStyle, setFoliageStyle] = useState<FoliageType>("grass");
+  const actionReadyAt = useRef<Record<string, number>>({});
+
+  const isActionReady = useCallback((key: string, cooldownMs: number) => {
+    const now = performance.now();
+    if ((actionReadyAt.current[key] ?? 0) > now) return false;
+
+    actionReadyAt.current[key] = now + cooldownMs;
+    return true;
+  }, []);
+
+  const triggerTrick = useCallback(
+    (nextTrick: AxolotlTrick) => {
+      if (nextTrick === "none") {
+        setTrick(nextTrick);
+        return;
+      }
+
+      if (trick !== "none" || !isActionReady("trick", 1500)) return;
+
+      if (nextTrick === "toot") {
+        playTootSound();
+      }
+
+      setTrick(nextTrick);
+    },
+    [isActionReady, trick],
+  );
 
   const cycleFoliage = () => {
+    if (!isActionReady("foliage", 250)) return;
+
     const types: FoliageType[] = ["grass", "kelp", "vines"];
     const nextIndex = (types.indexOf(foliageStyle) + 1) % types.length;
     setFoliageStyle(types[nextIndex]);
   };
 
   const petAxolotl = () => {
+    if (!isActionReady("pet", 1500)) return;
+
     setIsPetting(true);
     window.setTimeout(() => setIsPetting(false), 1500);
   };
@@ -45,7 +83,7 @@ export function AquariumUiProvider({
         petName,
         setPetName,
         trick,
-        setTrick,
+        setTrick: triggerTrick,
         isPetting,
         setIsPetting,
         deleteMode,

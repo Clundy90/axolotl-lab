@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type {
   AccessoryType,
   AxolotlMood,
@@ -51,11 +51,13 @@ export function useAquariumLogic() {
   const [foods, setFoods] = useState<FeedItem[]>([]);
   const [treats, setTreats] = useState<FeedItem[]>([]);
   const [snackCount, setSnackCount] = useState(0);
-  const [mood, setMood] = useState<AxolotlMood>("chill");
+  const [mood, setMoodState] = useState<AxolotlMood>("chill");
+  const actionReadyAt = useRef<Record<string, number>>({});
+  const moodResetTimer = useRef<number | null>(null);
 
   // --- ENVIRONMENT STATE ---
-  const [lightMode, setLightMode] = useState<LightMode>("day");
-  const [showGrass, setShowGrass] = useState(true);
+  const [lightMode, setLightModeState] = useState<LightMode>("day");
+  const [showGrass, setShowGrassState] = useState(true);
   const [substrate, setSubstrate] =
     useState<keyof typeof SUBSTRATE_TYPES>("gravel");
   const [backgroundTextureId, setBackgroundTextureId] = useState(
@@ -85,7 +87,66 @@ export function useAquariumLogic() {
     : AXOLOTL_COLORS[colorIndex];
   const currentBackground = getBackgroundById(backgroundTextureId);
 
+  useEffect(() => {
+    return () => {
+      if (moodResetTimer.current !== null) {
+        window.clearTimeout(moodResetTimer.current);
+      }
+    };
+  }, []);
+
   // --- FEEDING LOGIC ---
+
+  const isActionReady = useCallback((key: string, cooldownMs: number) => {
+    const now = performance.now();
+    if ((actionReadyAt.current[key] ?? 0) > now) return false;
+
+    actionReadyAt.current[key] = now + cooldownMs;
+    return true;
+  }, []);
+
+  const scheduleMoodReset = useCallback((delayMs: number) => {
+    if (moodResetTimer.current !== null) {
+      window.clearTimeout(moodResetTimer.current);
+    }
+
+    moodResetTimer.current = window.setTimeout(() => {
+      setMoodState("chill");
+      moodResetTimer.current = null;
+    }, delayMs);
+  }, []);
+
+  const setMood = useCallback(
+    (nextMood: AxolotlMood) => {
+      if (!isActionReady("mood", 350)) return;
+      setMoodState(nextMood);
+    },
+    [isActionReady],
+  );
+
+  const setLightMode = useCallback(
+    (nextMode: LightMode | ((previousMode: LightMode) => LightMode)) => {
+      if (!isActionReady("light-mode", 300)) return;
+
+      setLightModeState((previousMode) =>
+        typeof nextMode === "function" ? nextMode(previousMode) : nextMode,
+      );
+    },
+    [isActionReady],
+  );
+
+  const setShowGrass = useCallback(
+    (nextShowGrass: boolean | ((previousShowGrass: boolean) => boolean)) => {
+      if (!isActionReady("show-grass", 300)) return;
+
+      setShowGrassState((previousShowGrass) =>
+        typeof nextShowGrass === "function"
+          ? nextShowGrass(previousShowGrass)
+          : nextShowGrass,
+      );
+    },
+    [isActionReady],
+  );
 
   /** Generates a new feed item with randomized horizontal drift */
   const nextFeedItem = (spawnY: number): FeedItem => ({
@@ -96,28 +157,40 @@ export function useAquariumLogic() {
   });
 
   const handleFeed = useCallback(() => {
-    setFoods((prev) => [...prev, nextFeedItem(2.95)]);
-  }, []);
+    if (!isActionReady("feed", 450)) return;
+
+    setFoods((prev) => {
+      if (prev.length >= 4) return prev;
+      return [...prev, nextFeedItem(2.95)];
+    });
+  }, [isActionReady]);
 
   const handleDropTreat = useCallback(() => {
+    if (!isActionReady("treat", 750)) return;
+
     const newId = nextFeedItem(2.6);
-    setTreats((prev) => [...prev, newId]);
-    setMood("excited");
-    // Revert mood after a short delay
-    setTimeout(() => setMood("chill"), 4000);
-  }, []);
+    setTreats((prev) => {
+      if (prev.length >= 3) return prev;
+      return [...prev, newId];
+    });
+    setMoodState("excited");
+    scheduleMoodReset(4000);
+  }, [isActionReady, scheduleMoodReset]);
 
   const consumeFood = useCallback((id: number) => {
     setFoods((prev) => prev.filter((item) => item.id !== id));
     setSnackCount((prev) => prev + 1);
   }, []);
 
-  const consumeTreat = useCallback((id: number) => {
-    setTreats((prev) => prev.filter((item) => item.id !== id));
-    setMood("excited");
-    setSnackCount((prev) => prev + 1);
-    setTimeout(() => setMood("chill"), 2500);
-  }, []);
+  const consumeTreat = useCallback(
+    (id: number) => {
+      setTreats((prev) => prev.filter((item) => item.id !== id));
+      setMoodState("excited");
+      setSnackCount((prev) => prev + 1);
+      scheduleMoodReset(2500);
+    },
+    [scheduleMoodReset],
+  );
 
   const missFood = useCallback((id: number) => {
     setFoods((prev) => prev.filter((item) => item.id !== id));
@@ -130,31 +203,45 @@ export function useAquariumLogic() {
   // --- DECORATION LOGIC ---
 
   /** Adds a new piece of furniture or foliage to the tank */
-  const addDecoration = useCallback((type: DecorationType) => {
-    setDecorations((prev) => {
-      if (prev.length >= MAX_DECORATIONS) return prev;
-      return [...prev, createDecoration(type)];
-    });
-  }, []);
+  const addDecoration = useCallback(
+    (type: DecorationType) => {
+      if (!isActionReady(`decoration:${type}`, 300)) return;
 
-  const addBackgroundFish = useCallback((type: BackgroundFishType) => {
-    setBackgroundFish((prev) => {
-      if (prev.length >= MAX_BACKGROUND_FISH) return prev;
-      return [...prev, createBackgroundFish(type)];
-    });
-  }, []);
+      setDecorations((prev) => {
+        if (prev.length >= MAX_DECORATIONS) return prev;
+        return [...prev, createDecoration(type)];
+      });
+    },
+    [isActionReady],
+  );
+
+  const addBackgroundFish = useCallback(
+    (type: BackgroundFishType) => {
+      if (!isActionReady(`fish:${type}`, 300)) return;
+
+      setBackgroundFish((prev) => {
+        if (prev.length >= MAX_BACKGROUND_FISH) return prev;
+        return [...prev, createBackgroundFish(type)];
+      });
+    },
+    [isActionReady],
+  );
 
   const removeBackgroundFish = useCallback((id: number) => {
     setBackgroundFish((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
   const removeLastBackgroundFish = useCallback(() => {
+    if (!isActionReady("remove-background-fish", 250)) return;
+
     setBackgroundFish((prev) => prev.slice(0, -1));
-  }, []);
+  }, [isActionReady]);
 
   const removeLastDecoration = useCallback(() => {
+    if (!isActionReady("remove-decoration", 250)) return;
+
     setDecorations((prev) => prev.slice(0, -1));
-  }, []);
+  }, [isActionReady]);
 
   const moveDecoration = useCallback(
     (id: number, position: [number, number, number]) => {
@@ -168,6 +255,14 @@ export function useAquariumLogic() {
   const removeDecoration = useCallback((id: number) => {
     setDecorations((prev) => prev.filter((item) => item.id !== id));
   }, []);
+
+  const selectAccessory = useCallback(
+    (type: AccessoryType | null) => {
+      if (!isActionReady("accessory", 250)) return;
+      setCurrentAccessory(type);
+    },
+    [isActionReady],
+  );
 
   // --- COLOR LOGIC ---
 
@@ -213,17 +308,24 @@ export function useAquariumLogic() {
 
   /** Cycles through the available substrate textures */
   const cycleSubstrate = useCallback(() => {
+    if (!isActionReady("substrate", 250)) return;
+
     const keys = Object.keys(
       SUBSTRATE_TYPES,
     ) as (keyof typeof SUBSTRATE_TYPES)[];
     const currentIndex = keys.indexOf(substrate);
     setSubstrate(keys[(currentIndex + 1) % keys.length]);
-  }, [substrate]);
+  }, [isActionReady, substrate]);
 
-  const setBackgroundTexture = useCallback((id: BackgroundOption["id"]) => {
-    const nextBackground = getBackgroundById(id);
-    setBackgroundTextureId(nextBackground.id);
-  }, []);
+  const setBackgroundTexture = useCallback(
+    (id: BackgroundOption["id"]) => {
+      if (!isActionReady("background", 300)) return;
+
+      const nextBackground = getBackgroundById(id);
+      setBackgroundTextureId(nextBackground.id);
+    },
+    [isActionReady],
+  );
 
   return {
     // State
@@ -266,7 +368,7 @@ export function useAquariumLogic() {
     removeLastDecoration,
     moveDecoration,
     removeDecoration,
-    setCurrentAccessory,
+    setCurrentAccessory: selectAccessory,
     cycleSubstrate,
     setBackgroundTexture,
     selectColor,
