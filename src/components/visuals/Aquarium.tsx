@@ -7,6 +7,13 @@ import {
   useAquariumUi,
 } from "../../context/AquariumUiContext";
 
+import {
+  ACCESSORY_OPTIONS,
+  type AccessoryOption,
+} from "../Accessories/AccessoryCatalog";
+
+// Detailed Comment: Type union mapping out every possible modular body part on the axolotl model
+// that can be targeted for custom color palettes.
 type AxolotlPartId =
   | "body"
   | "gills"
@@ -16,6 +23,7 @@ type AxolotlPartId =
   | "toes"
   | "eyes";
 
+// Detailed Comment: Configuration interface to bind the internal technical part IDs to user-friendly UI labels.
 interface PartConfig {
   id: AxolotlPartId;
   label: string;
@@ -64,7 +72,9 @@ const COLORS = {
 // STYLE HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Pill-shaped action button used throughout the drawer panels */
+/** * Detailed Comment: Reusable pill-shaped action button styling used throughout the drawer panels.
+ * Contains logic to swap styles out entirely based on the 'isActive' boolean parameter.
+ */
 const pillBtn = (bgColor: string, isActive = false): React.CSSProperties => ({
   padding: "9px 14px",
   cursor: "pointer",
@@ -81,7 +91,9 @@ const pillBtn = (bgColor: string, isActive = false): React.CSSProperties => ({
   whiteSpace: "nowrap" as const,
 });
 
-/** Tab button sitting in the banner bar */
+/** * Detailed Comment: Styling for the top-level tab buttons sitting in the main banner bar.
+ * Uses flex-column to stack the emoji directly on top of the text label.
+ */
 const tabBtn = (
   accentColor: string,
   isActive: boolean,
@@ -107,10 +119,12 @@ const tabBtn = (
   letterSpacing: "0.4px",
 });
 
-/** The shared drawer panel that slides open beneath the banner */
+/** * Detailed Comment: The shared styling for the drawer panel container that slides open beneath the banner.
+ * Centered exactly on the screen and layered over the game scene via zIndex.
+ */
 const drawerStyle: React.CSSProperties = {
   position: "absolute",
-  top: "88px", // just below the 80px banner
+  top: "88px", // Push down just enough to clear the 80px banner
   left: "50%",
   transform: "translateX(-50%)",
   background: COLORS.drawerBg,
@@ -129,7 +143,9 @@ const drawerStyle: React.CSSProperties = {
   animation: "dropIn 0.18s ease",
 };
 
-/** Inline CSS injected once for animations */
+/** * Detailed Comment: Global inline CSS string. Contains all keyframe animations.
+ * Injected once into the DOM so React elements can reference them via classNames.
+ */
 const globalStyles = `
   @keyframes dropIn {
     from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
@@ -171,20 +187,23 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 function AquariumUiOverlay() {
+  // Detailed Comment: Pulling global game states using context hooks.
   const aquarium = useAquarium() as any;
   const ui = useAquariumUi() as any;
 
-  // Detailed Comment: activePanel tracks which top-bar tab is currently open;
-  // null means the drawer is closed. Both the left (axolotl) and right (deco)
-  // tab groups share one drawer slot — only one panel is visible at a time.
+  // Detailed Comment: activePanel string tracks which top-bar tab is currently opened in the UI.
+  // Using null means the drawer is entirely hidden. Both the left and right tab groups share one slot.
   const [activePanel, setActivePanel] = useState<string | null>(null);
 
+  // Detailed Comment: Visibility states for sub-menus and toggles
   const [showCustomColors, setShowCustomColors] = useState<boolean>(false);
   const [showSubstrate, setShowSubstrate] = useState<boolean>(true);
 
-  // Detailed Comment: Tracks the text input for the main interactive floating title banner
+  // Detailed Comment: Two-way binding state for the main interactive text input (the axolotl's name)
   const [axolotlName, setAxolotlName] = useState<string>("My Axolotl");
 
+  // Detailed Comment: Structured array mapping out all axolotl parts so we can safely loop over them
+  // in the color picking menu rather than hardcoding seven separate inputs.
   const bodyParts: PartConfig[] = [
     { id: "body", label: "Body" },
     { id: "gills", label: "Gills" },
@@ -195,25 +214,21 @@ function AquariumUiOverlay() {
     { id: "eyes", label: "Eyes" },
   ];
 
-  // Detailed Comment: Reusable button styling helper to maintain a thick, cartoony, clickable look
-  const getGameButtonStyle = (bgColor: string, isActive?: boolean) => ({
-    ...pillBtn(bgColor, isActive),
-  });
-
-  // Detailed Comment: Toggle helper — clicking the same tab again closes the drawer
+  // Detailed Comment: Helper to safely toggle menus. If you click the same button twice, it sets the state to null to close it.
   const togglePanel = (id: string) =>
     setActivePanel((prev) => (prev === id ? null : id));
 
   return (
     <>
-      {/* ── Inject global keyframe animations once ── */}
+      {/* ── Inject global keyframe animations once right at the top ── */}
       <style>{globalStyles}</style>
 
       {/*
         ═══════════════════════════════════════════════════════════════════
         OUTER OVERLAY WRAPPER
-        Full-screen, pointer-events: none so the 3D scene stays clickable.
-        Only interactive children set pointerEvents: auto.
+        Sets absolute positioning to float over the 3D canvas.
+        Pointer-events is set to 'none' here so clicks pass through to the 3D scene,
+        but inner panels set it back to 'auto' so buttons remain clickable!
         ═══════════════════════════════════════════════════════════════════
       */}
       <div
@@ -231,10 +246,7 @@ function AquariumUiOverlay() {
         {/*
           ─────────────────────────────────────────────────────────────────
           TOP BANNER BAR
-          A single pill-shaped strip that holds:
-            • Left group  — axolotl care tabs (Care, Moods, Tricks, Accessories, Colors)
-            • Center      — glowing pet name input (the signature element)
-            • Right group — environment/deco tabs (Toys, Tank, Backgrounds)
+          This div acts as the main navigation hub at the top of the screen.
           ─────────────────────────────────────────────────────────────────
         */}
         <div
@@ -247,7 +259,7 @@ function AquariumUiOverlay() {
             borderRadius: "50px",
             border: "4px solid rgba(255,255,255,0.85)",
             padding: "8px 16px",
-            pointerEvents: "auto",
+            pointerEvents: "auto", // Detailed Comment: Restoring clickability for the buttons
             boxShadow:
               "0 8px 0px rgba(180,100,220,0.3), 0 14px 32px rgba(180,80,200,0.22)",
             display: "flex",
@@ -257,7 +269,7 @@ function AquariumUiOverlay() {
             whiteSpace: "nowrap",
           }}
         >
-          {/* ── LEFT TAB GROUP: AXOLOTL ── */}
+          {/* ── LEFT TAB GROUP: AXOLOTL (Pet Interaction) ── */}
           <button
             className="pill-btn"
             style={tabBtn(COLORS.care, activePanel === "CARE")}
@@ -291,7 +303,7 @@ function AquariumUiOverlay() {
             DRESS UP
           </button>
 
-          {/* ── CENTER: PET NAME INPUT (signature glowing element) ── */}
+          {/* ── CENTER: PET NAME INPUT (Includes the animated CSS rainbowGlow border) ── */}
           <div
             style={{
               display: "flex",
@@ -334,7 +346,7 @@ function AquariumUiOverlay() {
             COLORS
           </button>
 
-          {/* ── RIGHT TAB GROUP: TANK / DECO ── */}
+          {/* ── RIGHT TAB GROUP: TANK / DECO (World/Environment Interaction) ── */}
           <button
             className="pill-btn"
             style={tabBtn(COLORS.toys, activePanel === "TOYS")}
@@ -368,9 +380,8 @@ function AquariumUiOverlay() {
         {/*
           ─────────────────────────────────────────────────────────────────
           DRAWER PANELS
-          One shared slot — only the active panel renders, centered under
-          the banner. Each panel uses drawerStyle as its base.
-          All logic hookups are identical to the original side panels.
+          Below are conditional renders. Only the panel matching the activePanel
+          state will be mounted to the DOM and injected with the drawerStyle.
           ─────────────────────────────────────────────────────────────────
         */}
 
@@ -406,6 +417,7 @@ function AquariumUiOverlay() {
         {activePanel === "MOODS" && (
           <div style={drawerStyle}>
             <SectionLabel>💜 PICK A MOOD 💜</SectionLabel>
+            {/* Detailed Comment: Mapping over hardcoded states to automatically build out mood buttons */}
             {["chill", "excited", "lazy"].map((mood) => (
               <button
                 key={mood}
@@ -427,6 +439,7 @@ function AquariumUiOverlay() {
         {activePanel === "TRICKS" && (
           <div style={drawerStyle}>
             <SectionLabel>✨ TEACH SOME TRICKS ✨</SectionLabel>
+            {/* Detailed Comment: Trick buttons are disabled to prevent spamming if an animation is currently running */}
             <button
               className="pill-btn"
               style={pillBtn(COLORS.purple)}
@@ -466,38 +479,46 @@ function AquariumUiOverlay() {
         {activePanel === "ACCESS" && (
           <div style={drawerStyle}>
             <SectionLabel>👑 DRESS YOUR AXOLOTL 👑</SectionLabel>
-            {["crown", "glasses", "headphones", "topHat", "none"].map((acc) => (
-              <button
-                key={acc}
-                className="pill-btn"
-                style={pillBtn(
-                  COLORS.yellow,
-                  aquarium.currentAccessory === acc,
-                )}
-                onClick={() =>
-                  aquarium.setCurrentAccessory?.(acc === "none" ? null : acc)
-                }
-              >
-                {acc === "crown"
-                  ? "👑 Crown"
-                  : acc === "glasses"
-                    ? "🕶️ Glasses"
-                    : acc === "headphones"
-                      ? "🎧 Headphones"
-                      : acc === "topHat"
-                        ? "🎩 Top Hat"
-                        : "❌ No Hat"}
-              </button>
-            ))}
+
+            {ACCESSORY_OPTIONS.map((acc) => {
+              // Map dynamic emoji based on the accessory type string
+              let iconEmoji = "👑";
+              if (acc.type.toLowerCase().includes("glasses")) iconEmoji = "🕶️";
+              if (acc.type === "headphones") iconEmoji = "🎧";
+              if (acc.type === "pearlNecklace") iconEmoji = "📿";
+              if (acc.type === "topHat") iconEmoji = "🎩";
+
+              return (
+                <button
+                  key={acc.type}
+                  className="pill-btn"
+                  style={pillBtn(
+                    COLORS.yellow,
+                    aquarium.currentAccessory === acc.type,
+                  )}
+                  onClick={() => aquarium.setCurrentAccessory?.(acc.type)}
+                >
+                  {iconEmoji} {acc.label}
+                </button>
+              );
+            })}
+
+            {/* Clear Hat Button */}
+            <button
+              className="pill-btn"
+              style={pillBtn(COLORS.grey, !aquarium.currentAccessory)}
+              onClick={() => aquarium.setCurrentAccessory?.(null)}
+            >
+              ❌ No Hat
+            </button>
           </div>
         )}
-
         {/* ── COLORS PANEL ── */}
         {activePanel === "COLOR" && (
           <div style={drawerStyle}>
             <SectionLabel>🎨 PICK AXOLOTL COLORS 🎨</SectionLabel>
 
-            {/* Theme presets */}
+            {/* Detailed Comment: Top row is preset theme palletes that instantly override custom inputs */}
             <button
               className="pill-btn"
               style={pillBtn(COLORS.care, aquarium.isCustomPalette)}
@@ -539,7 +560,7 @@ function AquariumUiOverlay() {
               🌊 Ocean
             </button>
 
-            {/* Custom per-part color pickers — shown when "Custom" is toggled */}
+            {/* Detailed Comment: Map over the bodyParts config block to dynamically generate our custom HEX pickers */}
             {showCustomColors &&
               bodyParts.map((part) => (
                 <div
@@ -566,6 +587,7 @@ function AquariumUiOverlay() {
                   </span>
                   <input
                     type="color"
+                    // Detailed Comment: Fallback to strict #ffffff to avoid HTML color picker crashing if the prop drops undefined
                     value={aquarium.currentColor?.[part.id] || "#ffffff"}
                     onChange={(e) =>
                       aquarium.updateCustomColor?.(part.id, e.target.value)
@@ -588,6 +610,7 @@ function AquariumUiOverlay() {
         {activePanel === "TOYS" && (
           <div style={drawerStyle}>
             <SectionLabel>🏰 ADD TOYS TO THE TANK 🏰</SectionLabel>
+            {/* Detailed Comment: Sends dispatch calls to AquariumContext requesting environment item generation */}
             <button
               className="pill-btn"
               style={pillBtn(COLORS.orange)}
@@ -616,6 +639,7 @@ function AquariumUiOverlay() {
             >
               Brain Coral
             </button>
+            {/* Detailed Comment: Toggle flag that swaps cursor functionality on the 3D canvas so you can point-and-click to delete objects */}
             <button
               className="pill-btn"
               style={pillBtn(ui.deleteMode ? COLORS.red : COLORS.grey)}
@@ -631,7 +655,7 @@ function AquariumUiOverlay() {
           <div style={drawerStyle}>
             <SectionLabel>🌿 TANK SETTINGS 🌿</SectionLabel>
 
-            {/* Day / Night toggle */}
+            {/* Detailed Comment: Day / Night state directly adjusts underlying shader variables and lighting elements */}
             <button
               className="pill-btn"
               style={pillBtn(COLORS.blue)}
@@ -645,7 +669,7 @@ function AquariumUiOverlay() {
               switch!
             </button>
 
-            {/* Floor mat */}
+            {/* Detailed Comment: Substrate controls — Cycles through different ground textures or entirely disables the floor plane */}
             <button
               className="pill-btn"
               style={pillBtn(COLORS.teal)}
@@ -668,7 +692,7 @@ function AquariumUiOverlay() {
               {showSubstrate ? "👁️ Hide Mat" : "👁️ Show Mat"}
             </button>
 
-            {/* Fish */}
+            {/* Detailed Comment: Passive ambient fish schools. Checks constraints to ensure we don't spawn more than maxBackgroundFish limit. */}
             <div
               style={{
                 display: "flex",
@@ -720,7 +744,7 @@ function AquariumUiOverlay() {
               </button>
             </div>
 
-            {/* Plants */}
+            {/* Detailed Comment: Environment Foliage Controls */}
             <button
               className="pill-btn"
               style={pillBtn(COLORS.green)}
@@ -742,6 +766,7 @@ function AquariumUiOverlay() {
         {activePanel === "BG" && (
           <div style={drawerStyle}>
             <SectionLabel>🖼️ PICK A BACKGROUND SCENE 🖼️</SectionLabel>
+            {/* Detailed Comment: Dynamically loops through 2D backing images fetched from context to build background pickers */}
             {(aquarium.backgroundOptions || []).map((bg: any) => (
               <button
                 key={bg.id}
@@ -762,10 +787,14 @@ function AquariumUiOverlay() {
   );
 }
 
+// Detailed Comment: Structural Shell Component
+// Generates the massive background div that wraps the React Three Fiber Canvas and the UI overlays.
+// It applies responsive CSS backgrounds or gradients depending on current lighting and selected environments.
 function AquariumShell({ children }: { children: React.ReactNode }) {
   const aquarium = useAquarium();
   const hasBackgroundTexture = Boolean(aquarium.currentBackground?.url);
 
+  // Detailed Comment: Provides a tinted hue over custom backgrounds to ensure they always blend naturally into day/night cycles
   const backgroundOverlay =
     aquarium.lightMode === "day"
       ? "linear-gradient(rgba(91, 187, 255, 0.24), rgba(15, 74, 139, 0.28))"
@@ -793,7 +822,7 @@ function AquariumShell({ children }: { children: React.ReactNode }) {
         width: "100vw",
         height: "100vh",
         position: "relative",
-        overflow: "hidden",
+        overflow: "hidden", // Detailed Comment: Critically ensures the canvas and absolutely positioned UI don't generate unwanted scrollbars
       }}
     >
       {children}
@@ -801,6 +830,8 @@ function AquariumShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Detailed Comment: Master Component Export
+// Nests the primary context providers and layers the interactive UI over the 3D WebGL scene so both environments can talk to each other.
 export default function Aquarium() {
   return (
     <AquariumProvider>

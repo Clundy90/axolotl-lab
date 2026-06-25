@@ -5,7 +5,10 @@ export interface AccessoryOption {
   label: string;
   fileName: string;
   buttonClass: string;
-  scale: number;
+  placement: "head" | "face" | "neck";
+  fitAxis: "max" | "x" | "y" | "z";
+  fitSize: number;
+  anchor: "bottom" | "center";
   position: [number, number, number];
   rotation: [number, number, number];
 }
@@ -16,8 +19,11 @@ export const ACCESSORY_OPTIONS: AccessoryOption[] = [
     label: "Crown",
     fileName: "Crown.glb",
     buttonClass: "btn-secondary",
-    scale: 0.42,
-    position: [0, 0.46, 0.22],
+    placement: "head",
+    fitAxis: "x",
+    fitSize: 0.56,
+    anchor: "bottom",
+    position: [0, 0.43, 0.08],
     rotation: [0, 0, 0],
   },
   {
@@ -25,8 +31,11 @@ export const ACCESSORY_OPTIONS: AccessoryOption[] = [
     label: "Tiny Crown",
     fileName: "Crown 2.glb",
     buttonClass: "btn-secondary",
-    scale: 0.39,
-    position: [0, 0.44, 0.22],
+    placement: "head",
+    fitAxis: "x",
+    fitSize: 0.5,
+    anchor: "bottom",
+    position: [0, 0.45, 0.06],
     rotation: [0, 0, 0],
   },
   {
@@ -34,8 +43,13 @@ export const ACCESSORY_OPTIONS: AccessoryOption[] = [
     label: "Glasses",
     fileName: "Glasses.glb",
     buttonClass: "btn-info",
-    scale: 0.42,
-    position: [0, 0.04, 0.54],
+    placement: "face",
+    fitAxis: "x",
+    // Detailed Comment: Increased size slightly to frame the face better,
+    // and pulled Z back from 0.5 to 0.42 so they don't look like they are floating in mid-air.
+    fitSize: 0.75,
+    anchor: "center",
+    position: [0, 0.1, 0.42],
     rotation: [0, 0, 0],
   },
   {
@@ -43,35 +57,24 @@ export const ACCESSORY_OPTIONS: AccessoryOption[] = [
     label: "Pixel Glasses",
     fileName: "Pixel Glasses.glb",
     buttonClass: "btn-info",
-    scale: 0.41,
-    position: [0, 0.04, 0.54],
+    placement: "face",
+    fitAxis: "x",
+    fitSize: 0.78,
+    anchor: "center",
+    position: [0, 0.1, 0.44],
     rotation: [0, 0, 0],
   },
-  {
-    type: "headphones",
-    label: "Headphones",
-    fileName: "Headphones.glb",
-    buttonClass: "btn-success",
-    scale: 0.46,
-    position: [0, 0.2, 0.16],
-    rotation: [0, 0, 0],
-  },
-  {
-    type: "pearlNecklace",
-    label: "Pearl Necklace",
-    fileName: "Pearl necklace.glb",
-    buttonClass: "btn-success",
-    scale: 0.45,
-    position: [0, -0.08, 0.46],
-    rotation: [0, 0, 0],
-  },
+
   {
     type: "topHat",
     label: "Top Hat",
     fileName: "Top hat.glb",
     buttonClass: "btn-secondary",
-    scale: 0.45,
-    position: [0, 0.57, 0.18],
+    placement: "head",
+    fitAxis: "x",
+    fitSize: 0.68,
+    anchor: "bottom",
+    position: [0, 0.42, 0.04],
     rotation: [0, 0, 0],
   },
 ];
