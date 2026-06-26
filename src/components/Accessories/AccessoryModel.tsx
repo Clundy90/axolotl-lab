@@ -7,7 +7,10 @@ import { ACCESSORY_OPTIONS, type AccessoryOption } from "./AccessoryCatalog";
 
 const ACCESSORY_ROOT = "/Accessories";
 
-function getFitDimension(size: THREE.Vector3, axis: AccessoryOption["fitAxis"]) {
+function getFitDimension(
+  size: THREE.Vector3,
+  axis: AccessoryOption["fitAxis"],
+) {
   if (axis === "x") return size.x;
   if (axis === "y") return size.y;
   if (axis === "z") return size.z;

@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { useState, type RefObject, useEffect, useMemo } from "react";
+// Go up 3 levels: Behavior -> visuals -> components -> src, then down into utils
+import { playTootSound, preloadTootSound } from "../../../utils/tootSound";
 
 // Exported the type so we can use it in our UI and state files
 export type TrickType = "none" | "barrelRoll" | "backflip" | "spin" | "toot";
@@ -46,6 +48,11 @@ export function TrickHandler({ rootRef, trick, onTrickComplete }: TrickProps) {
     rotZ: number;
   } | null>(null);
 
+  // Preload the toot sound asset as soon as the component mounts
+  useEffect(() => {
+    void preloadTootSound();
+  }, []);
+
   // Reset progress and capture base transform every time a new trick begins
   useEffect(() => {
     if (trick !== "none" && rootRef.current) {
@@ -56,6 +63,11 @@ export function TrickHandler({ rootRef, trick, onTrickComplete }: TrickProps) {
         rotY: rootRef.current.rotation.y,
         rotZ: rootRef.current.rotation.z,
       });
+
+      // Play the audio clip immediately when the toot trick is initiated
+      if (trick === "toot") {
+        void playTootSound();
+      }
     } else {
       // Clear the transform cache when no trick is running
       setBaseTransform(null);
