@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import type { AxolotlTrick, FoliageType } from "../state/aquarium";
-import { playTootSound } from "../utils/tootSound";
+import { playTootSound } from "../components/utils/tootSound";
 
 interface AquariumUiContextValue {
   petName: string;

@@ -22,52 +22,60 @@ export default function Leg({
   const kneeRef = useRef<THREE.Group>(null);
 
   useFrame(({ clock }) => {
-    const t = clock.elapsedTime * 3.6 + phase;
+    const t = clock.elapsedTime * 2.8 + phase;
     const stroke = Math.sin(t);
-    const lateralShift = Math.cos(t);
+    const lateralShift = Math.cos(t * 0.8) * 0.08;
 
     if (hipRef.current) {
-      hipRef.current.rotation.x = -0.4 + stroke * 0.15;
-      hipRef.current.rotation.y = side * 0.4 + lateralShift * side * 0.1;
-      hipRef.current.rotation.z = side * -0.6;
+      // More natural hip rotation - less extreme angles
+      hipRef.current.rotation.x = -0.3 + stroke * 0.2;
+      hipRef.current.rotation.y = side * 0.35;
+      hipRef.current.rotation.z = side * -0.5 + lateralShift * side * 0.15;
     }
 
     if (kneeRef.current) {
-      const kneeStroke = Math.sin(t - 0.4);
-      kneeRef.current.rotation.x = 0.5 + kneeStroke * 0.3;
-      kneeRef.current.rotation.z = side * 0.4;
+      // Knee follows hip motion with smooth bend
+      const kneeStroke = Math.sin(t - 0.3);
+      kneeRef.current.rotation.x = 0.4 + kneeStroke * 0.35;
+      kneeRef.current.rotation.z = side * 0.3;
     }
   });
 
   return (
     <group position={position}>
       <group ref={hipRef}>
-        {/* Upper Leg */}
-        <mesh position={[side * 0.04, -0.04, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <capsuleGeometry args={[0.03, 0.1, 8, 8]} />
+        {/* Upper Leg - extends from body naturally */}
+        <mesh position={[side * 0.05, -0.08, 0]}>
+          <capsuleGeometry args={[0.038, 0.16, 10, 10]} />
           <meshStandardMaterial color={legColor} roughness={0.72} />
         </mesh>
 
-        <group ref={kneeRef} position={[side * 0.12, -0.05, 0]}>
-          {/* Lower Leg */}
-          <mesh position={[0, -0.08, 0]}>
-            <capsuleGeometry args={[0.028, 0.12, 8, 8]} />
+        <group ref={kneeRef} position={[side * 0.05, -0.16, 0]}>
+          {/* Lower Leg - slightly tapered */}
+          <mesh position={[0, -0.09, 0]}>
+            <capsuleGeometry args={[0.032, 0.14, 10, 10]} />
+            <meshStandardMaterial color={legColor} roughness={0.72} />
+          </mesh>
+
+          {/* Knee joint connector */}
+          <mesh position={[0, -0.16, 0]}>
+            <sphereGeometry args={[0.03, 8, 8]} />
             <meshStandardMaterial color={legColor} roughness={0.72} />
           </mesh>
 
           {/* Fanned Toes - Now modular! */}
           <Toe
-            position={[0, -0.16, 0.03]}
+            position={[0, -0.19, 0.03]}
             scale={[1.4, 0.4, 1.6]}
             color={toeColor}
           />
           <Toe
-            position={[0.04, -0.17, 0.05]}
+            position={[0.045, -0.2, 0.05]}
             scale={[0.5, 0.1, 0.7]}
             color={toeColor}
           />
           <Toe
-            position={[-0.04, -0.17, 0.05]}
+            position={[-0.045, -0.2, 0.05]}
             scale={[0.5, 0.1, 0.7]}
             color={toeColor}
           />

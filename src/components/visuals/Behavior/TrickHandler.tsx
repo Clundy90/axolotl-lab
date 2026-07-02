@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { useState, type RefObject, useEffect, useMemo } from "react";
 // Go up 3 levels: Behavior -> visuals -> components -> src, then down into utils
-import { playTootSound, preloadTootSound } from "../../../utils/tootSound";
+import { playTootSound, preloadTootSound } from "../../utils/tootSound";
 
 // Exported the type so we can use it in our UI and state files
 export type TrickType = "none" | "barrelRoll" | "backflip" | "spin" | "toot";
