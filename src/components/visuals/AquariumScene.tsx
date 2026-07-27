@@ -1,5 +1,5 @@
 import React, { Suspense, useState, useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment } from "@react-three/drei";
 import AxolotlController from "./Axolotl/AxolotlController";
 import Substrate from "./Environment/Substrate";
@@ -12,6 +12,36 @@ import DecorationLayer from "./Decorations/DecorationLayer";
 import BackgroundFishLayer from "./BackgroundFish/BackgroundFishLayer";
 import { useAquarium } from "../../context/AquariumContext";
 import { useAquariumUi } from "../../context/AquariumUiContext";
+
+function ResponsiveCamera() {
+  const { camera } = useThree();
+
+  useEffect(() => {
+    const applyCameraFrame = () => {
+      const width = window.innerWidth;
+
+      if (width <= 640) {
+        camera.position.set(0, 0.75, 12.5);
+        camera.fov = 48;
+      } else if (width <= 1024) {
+        camera.position.set(0, 0.45, 10.2);
+        camera.fov = 40;
+      } else {
+        camera.position.set(0, 0.25, 8);
+        camera.fov = 35;
+      }
+
+      camera.updateProjectionMatrix();
+    };
+
+    applyCameraFrame();
+    window.addEventListener("resize", applyCameraFrame);
+
+    return () => window.removeEventListener("resize", applyCameraFrame);
+  }, [camera]);
+
+  return null;
+}
 
 export default function AquariumScene() {
   const aquarium = useAquarium();
@@ -30,6 +60,7 @@ export default function AquariumScene() {
 
   return (
     <Canvas shadows camera={{ position: [0, 0.25, 8], fov: 35 }}>
+      <ResponsiveCamera />
       <Suspense fallback={null}>
         <Lighting mode={aquarium.lightMode} />
         <BubbleStream />
