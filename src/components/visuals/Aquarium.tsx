@@ -1126,7 +1126,8 @@ function AquariumUiOverlay() {
 
               <div className="mobile-menu-footer">
                 <span className="mobile-footer-note">
-                  Extra controls stay hidden on mobile so the tank stays visible.
+                  Extra controls stay hidden on mobile so the tank stays
+                  visible.
                 </span>
               </div>
             </div>
