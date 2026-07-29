@@ -302,8 +302,7 @@ const globalStyles = `
       position: fixed;
       inset: 0;
       pointer-events: auto;
-      background: rgba(46, 15, 64, 0.34);
-      backdrop-filter: blur(8px);
+      background: rgba(46, 15, 64, 0.16);
       border: 0;
       padding: 0;
     }
@@ -313,19 +312,19 @@ const globalStyles = `
       left: 50%;
       bottom: max(12px, env(safe-area-inset-bottom));
       transform: translateX(-50%);
-      width: min(calc(100vw - 18px), 560px);
-      max-height: calc(100dvh - 96px);
+      width: min(calc(100vw - 18px), 380px);
+      max-height: calc(100dvh - 22px);
       overflow: hidden;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       pointer-events: auto;
-      padding: 14px;
-      border-radius: 30px;
-      border: 3px solid rgba(255,255,255,0.92);
-      background: linear-gradient(180deg, rgba(243, 178, 221, 0.98) 0%, rgba(217, 182, 255, 0.98) 52%, rgba(185, 229, 255, 0.98) 100%);
+      padding: 10px 12px 12px;
+      border-radius: 22px;
+      border: 2px solid rgba(255,255,255,0.74);
+      background: linear-gradient(180deg, rgba(243, 178, 221, 0.62) 0%, rgba(217, 182, 255, 0.5) 52%, rgba(185, 229, 255, 0.42) 100%);
       background-image: ${COLORS.drawerGlow};
-      background-blend-mode: screen;
-      box-shadow: 0 24px 60px rgba(91, 43, 106, 0.32);
+      background-blend-mode: soft-light;
+      box-shadow: 0 12px 28px rgba(91, 43, 106, 0.16);
       animation: riseIn 0.22s ease;
     }
     .mobile-menu-header {
@@ -336,8 +335,8 @@ const globalStyles = `
     }
     .mobile-menu-kicker {
       display: block;
-      margin: 0 0 3px;
-      font-size: 10px;
+      margin: 0 0 2px;
+      font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 1.2px;
       color: #7a3f00;
@@ -346,7 +345,7 @@ const globalStyles = `
     .mobile-menu-title {
       display: block;
       margin: 0;
-      font-size: 22px;
+      font-size: 18px;
       color: #5c3a7a;
       line-height: 1;
     }
@@ -356,87 +355,36 @@ const globalStyles = `
       justify-content: center;
       border: 0;
       border-radius: 999px;
-      padding: 10px 14px;
-      background: rgba(255,255,255,0.72);
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.6);
       color: #5c3a7a;
-      font-weight: 800;
-      box-shadow: 0 8px 18px rgba(92, 58, 122, 0.12);
-    }
-    .mobile-name-card {
-      display: block;
-      padding: 14px;
-      border-radius: 24px;
-      background: rgba(255,255,255,0.58);
-      border: 2px solid rgba(255,255,255,0.82);
-    }
-    .mobile-field-label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      color: #5c3a7a;
-    }
-    .mobile-name-input {
-      display: block;
-      width: 100%;
-      min-height: 48px;
-      font-size: 15px;
-    }
-    .mobile-panel-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
+      font-weight: 700;
+      box-shadow: 0 6px 12px rgba(92, 58, 122, 0.08);
     }
     .mobile-quick-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
     }
     .mobile-quick-action {
       width: 100%;
-      min-height: 52px;
+      min-height: 46px;
       white-space: normal;
-      padding: 10px 12px;
-      font-size: 14px;
+      padding: 8px 10px;
+      font-size: 13px;
     }
     .mobile-footer-note {
       display: block;
       width: 100%;
       text-align: center;
-      font-size: 11px;
-      line-height: 1.35;
+      font-size: 10px;
+      line-height: 1.25;
       color: #5c3a7a;
       opacity: 0.78;
-    }
-    .mobile-panel-tab {
-      justify-content: center;
-      gap: 6px;
-      white-space: normal;
-      min-height: 56px;
-      width: 100%;
-    }
-    .mobile-panel-tab span {
-      filter: drop-shadow(0 0 8px rgba(255,255,255,0.7));
-    }
-    .mobile-panel-card {
-      display: flex;
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow: auto;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 6px 2px 2px;
     }
     .mobile-menu-footer {
       display: flex;
       justify-content: center;
-    }
-    .mobile-simple-tabs {
-      padding-top: 2px;
     }
     .sparkle-field {
       z-index: 49;
@@ -475,7 +423,6 @@ function AquariumUiOverlay() {
   // Using null means the drawer is entirely hidden. Both the left and right tab groups share one slot.
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
 
   // Detailed Comment: Visibility states for sub-menus and toggles
   const [showCustomColors, setShowCustomColors] = useState<boolean>(false);
@@ -496,17 +443,6 @@ function AquariumUiOverlay() {
     { id: "eyes", label: "Eyes" },
   ];
 
-  const mobilePanelTabs = [
-    { id: "CARE", label: "Care", emoji: "🍖", color: COLORS.care },
-    { id: "MOODS", label: "Mood", emoji: "💜", color: COLORS.moods },
-    { id: "TRICKS", label: "Tricks", emoji: "💫", color: COLORS.tricks },
-    { id: "ACCESS", label: "Dress", emoji: "👑", color: COLORS.access },
-    { id: "COLOR", label: "Color", emoji: "🎨", color: COLORS.color },
-    { id: "TOYS", label: "Toys", emoji: "🏰", color: COLORS.toys },
-    { id: "TANK", label: "Tank", emoji: "🌿", color: COLORS.tank },
-    { id: "BG", label: "Scenes", emoji: "🖼️", color: COLORS.bg },
-  ] as const;
-
   const openMobileMenu = () => {
     setActivePanel((prev) => prev ?? "CARE");
     setIsMobileMenuOpen(true);
@@ -514,7 +450,6 @@ function AquariumUiOverlay() {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
-    setMobileMoreOpen(false);
   };
 
   useEffect(() => {
@@ -1151,8 +1086,8 @@ function AquariumUiOverlay() {
             >
               <div className="mobile-menu-header">
                 <div>
-                  <p className="mobile-menu-kicker">Quick care</p>
-                  <h3 className="mobile-menu-title">Keep the tank visible</h3>
+                  <p className="mobile-menu-kicker">Mobile quick menu</p>
+                  <h3 className="mobile-menu-title">Feed, pet, spin</h3>
                 </div>
                 <button
                   type="button"
@@ -1185,42 +1120,13 @@ function AquariumUiOverlay() {
                   disabled={ui.trick !== "none"}
                   onClick={() => ui.setTrick?.("spin")}
                 >
-                  💫 Trick
-                </button>
-                <button
-                  className="pill-btn mobile-quick-action"
-                  style={pillBtn(COLORS.blue)}
-                  onClick={() => setMobileMoreOpen((value) => !value)}
-                >
-                  {mobileMoreOpen ? "Less" : "More"}
+                  💫 Spin
                 </button>
               </div>
 
-              {mobileMoreOpen && (
-                <>
-                  <div className="mobile-panel-grid mobile-simple-tabs">
-                    {mobilePanelTabs.slice(0, 4).map((tab) => (
-                      <button
-                        key={tab.id}
-                        className="pill-btn mobile-panel-tab"
-                        style={pillBtn(tab.color, activePanel === tab.id)}
-                        onClick={() => setActivePanel(tab.id)}
-                      >
-                        <span style={{ fontSize: "16px" }}>{tab.emoji}</span>
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="mobile-panel-card mobile-simple-panel">
-                    {renderPanelContent()}
-                  </div>
-                </>
-              )}
-
               <div className="mobile-menu-footer">
                 <span className="mobile-footer-note">
-                  More controls stay hidden so the tank stays visible.
+                  Extra controls stay hidden on mobile so the tank stays visible.
                 </span>
               </div>
             </div>
