@@ -313,13 +313,13 @@ const globalStyles = `
       left: 50%;
       bottom: max(12px, env(safe-area-inset-bottom));
       transform: translateX(-50%);
-      width: min(calc(100vw - 16px), 720px);
-      max-height: calc(100dvh - 24px);
+      width: min(calc(100vw - 18px), 560px);
+      max-height: calc(100dvh - 96px);
       overflow: hidden;
       flex-direction: column;
-      gap: 14px;
+      gap: 10px;
       pointer-events: auto;
-      padding: 18px;
+      padding: 14px;
       border-radius: 30px;
       border: 3px solid rgba(255,255,255,0.92);
       background: linear-gradient(180deg, rgba(243, 178, 221, 0.98) 0%, rgba(217, 182, 255, 0.98) 52%, rgba(185, 229, 255, 0.98) 100%);
@@ -346,7 +346,7 @@ const globalStyles = `
     .mobile-menu-title {
       display: block;
       margin: 0;
-      font-size: 26px;
+      font-size: 22px;
       color: #5c3a7a;
       line-height: 1;
     }
@@ -389,6 +389,27 @@ const globalStyles = `
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
     }
+    .mobile-quick-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .mobile-quick-action {
+      width: 100%;
+      min-height: 52px;
+      white-space: normal;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    .mobile-footer-note {
+      display: block;
+      width: 100%;
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.35;
+      color: #5c3a7a;
+      opacity: 0.78;
+    }
     .mobile-panel-tab {
       justify-content: center;
       gap: 6px;
@@ -407,12 +428,15 @@ const globalStyles = `
       flex-wrap: wrap;
       gap: 10px;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       padding: 6px 2px 2px;
     }
     .mobile-menu-footer {
       display: flex;
       justify-content: center;
+    }
+    .mobile-simple-tabs {
+      padding-top: 2px;
     }
     .sparkle-field {
       z-index: 49;
@@ -451,6 +475,7 @@ function AquariumUiOverlay() {
   // Using null means the drawer is entirely hidden. Both the left and right tab groups share one slot.
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
 
   // Detailed Comment: Visibility states for sub-menus and toggles
   const [showCustomColors, setShowCustomColors] = useState<boolean>(false);
@@ -485,6 +510,11 @@ function AquariumUiOverlay() {
   const openMobileMenu = () => {
     setActivePanel((prev) => prev ?? "CARE");
     setIsMobileMenuOpen(true);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+    setMobileMoreOpen(false);
   };
 
   useEffect(() => {
@@ -1099,7 +1129,7 @@ function AquariumUiOverlay() {
               type="button"
               aria-label="Close aquarium menu"
               className="mobile-menu-backdrop"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={closeMobileMenu}
               style={{ pointerEvents: "auto" }}
             />
           )}
@@ -1121,57 +1151,77 @@ function AquariumUiOverlay() {
             >
               <div className="mobile-menu-header">
                 <div>
-                  <p className="mobile-menu-kicker">Axolotl studio</p>
-                  <h3 className="mobile-menu-title">Glam menu</h3>
+                  <p className="mobile-menu-kicker">Quick care</p>
+                  <h3 className="mobile-menu-title">Keep the tank visible</h3>
                 </div>
                 <button
                   type="button"
                   aria-label="Close menu"
                   className="mobile-menu-close"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={closeMobileMenu}
                 >
                   Close
                 </button>
               </div>
 
-              <div className="mobile-name-card">
-                <label
-                  className="mobile-field-label"
-                  htmlFor="mobile-aquarium-name"
+              <div className="mobile-quick-grid">
+                <button
+                  className="pill-btn mobile-quick-action primary"
+                  style={pillBtn(COLORS.green)}
+                  onClick={() => aquarium.handleFeed?.()}
                 >
-                  Aquarium name
-                </label>
-                <input
-                  id="mobile-aquarium-name"
-                  type="text"
-                  className="aquarium-title-input mobile-name-input"
-                  value={axolotlName}
-                  onChange={(e) => setAxolotlName(e.target.value)}
-                  placeholder="Name your little world"
-                />
+                  🍖 Feed
+                </button>
+                <button
+                  className="pill-btn mobile-quick-action primary"
+                  style={pillBtn(COLORS.pink)}
+                  onClick={() => ui.petAxolotl?.()}
+                >
+                  👋 Pet
+                </button>
+                <button
+                  className="pill-btn mobile-quick-action primary"
+                  style={pillBtn(COLORS.moods)}
+                  disabled={ui.trick !== "none"}
+                  onClick={() => ui.setTrick?.("spin")}
+                >
+                  💫 Trick
+                </button>
+                <button
+                  className="pill-btn mobile-quick-action"
+                  style={pillBtn(COLORS.blue)}
+                  onClick={() => setMobileMoreOpen((value) => !value)}
+                >
+                  {mobileMoreOpen ? "Less" : "More"}
+                </button>
               </div>
 
-              <div className="mobile-panel-grid">
-                {mobilePanelTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    className="pill-btn mobile-panel-tab"
-                    style={pillBtn(tab.color, activePanel === tab.id)}
-                    onClick={() => setActivePanel(tab.id)}
-                  >
-                    <span style={{ fontSize: "16px" }}>{tab.emoji}</span>
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
+              {mobileMoreOpen && (
+                <>
+                  <div className="mobile-panel-grid mobile-simple-tabs">
+                    {mobilePanelTabs.slice(0, 4).map((tab) => (
+                      <button
+                        key={tab.id}
+                        className="pill-btn mobile-panel-tab"
+                        style={pillBtn(tab.color, activePanel === tab.id)}
+                        onClick={() => setActivePanel(tab.id)}
+                      >
+                        <span style={{ fontSize: "16px" }}>{tab.emoji}</span>
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
 
-              <div className="mobile-panel-card">{renderPanelContent()}</div>
+                  <div className="mobile-panel-card mobile-simple-panel">
+                    {renderPanelContent()}
+                  </div>
+                </>
+              )}
 
               <div className="mobile-menu-footer">
-                <MusicPlayer
-                  className="pill-btn mobile-music-player"
-                  style={tabBtn(COLORS.teal, false)}
-                />
+                <span className="mobile-footer-note">
+                  More controls stay hidden so the tank stays visible.
+                </span>
               </div>
             </div>
           )}

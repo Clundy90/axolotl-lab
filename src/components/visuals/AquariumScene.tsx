@@ -1,6 +1,7 @@
 import React, { Suspense, useState, useEffect } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment } from "@react-three/drei";
+import * as THREE from "three";
 import AxolotlController from "./Axolotl/AxolotlController";
 import Substrate from "./Environment/Substrate";
 import { BubbleStream } from "./Environment/EnvironmentEffects";
@@ -15,23 +16,24 @@ import { useAquariumUi } from "../../context/AquariumUiContext";
 
 function ResponsiveCamera() {
   const { camera } = useThree();
+  const perspectiveCamera = camera as THREE.PerspectiveCamera;
 
   useEffect(() => {
     const applyCameraFrame = () => {
       const width = window.innerWidth;
 
       if (width <= 640) {
-        camera.position.set(0, 0.75, 12.5);
-        camera.fov = 48;
+        perspectiveCamera.position.set(0, 0.65, 11.4);
+        perspectiveCamera.fov = 46;
       } else if (width <= 1024) {
-        camera.position.set(0, 0.45, 10.2);
-        camera.fov = 40;
+        perspectiveCamera.position.set(0, 0.45, 10.2);
+        perspectiveCamera.fov = 40;
       } else {
-        camera.position.set(0, 0.25, 8);
-        camera.fov = 35;
+        perspectiveCamera.position.set(0, 0.25, 8);
+        perspectiveCamera.fov = 35;
       }
 
-      camera.updateProjectionMatrix();
+      perspectiveCamera.updateProjectionMatrix();
     };
 
     applyCameraFrame();
