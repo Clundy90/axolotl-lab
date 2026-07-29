@@ -320,12 +320,12 @@ const globalStyles = `
       pointer-events: auto;
       padding: 10px 12px 12px;
       border-radius: 22px;
-      border: 2px solid rgba(255,255,255,0.74);
-      background: linear-gradient(180deg, rgba(243, 178, 221, 0.62) 0%, rgba(217, 182, 255, 0.5) 52%, rgba(185, 229, 255, 0.42) 100%);
-      background-image: ${COLORS.drawerGlow};
-      background-blend-mode: soft-light;
+      border: 2px solid rgba(255,255,255,0.9);
+      background: linear-gradient(180deg, #f8c5e5 0%, #e9cbff 54%, #cfeeff 100%);
       box-shadow: 0 12px 28px rgba(91, 43, 106, 0.16);
       animation: riseIn 0.22s ease;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
     .mobile-menu-header {
       display: flex;
@@ -940,7 +940,8 @@ function AquariumUiOverlay() {
             zIndex: 30,
             whiteSpace: "nowrap",
             width: "min(96vw, 1240px)",
-            backdropFilter: "saturate(140%) blur(6px)",
+            backdropFilter: "none",
+            WebkitBackdropFilter: "none",
           }}
         >
           {/* ── LEFT TAB GROUP: AXOLOTL (Pet Interaction) ── */}
