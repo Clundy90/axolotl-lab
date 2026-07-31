@@ -1,6 +1,11 @@
 import React, { Suspense, useState, useEffect } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { ContactShadows, Environment } from "@react-three/drei";
+import {
+  ContactShadows,
+  Environment,
+  Html,
+  useProgress,
+} from "@react-three/drei";
 import * as THREE from "three";
 import AxolotlController from "./Axolotl/AxolotlController";
 import Substrate from "./Environment/Substrate";
@@ -11,8 +16,33 @@ import Food from "../Food/food";
 import Treat from "../Food/treat";
 import DecorationLayer from "./Decorations/DecorationLayer";
 import BackgroundFishLayer from "./BackgroundFish/BackgroundFishLayer";
+import { preloadDecorationAssets } from "./Decorations/DecorationModels";
 import { useAquarium } from "../../context/AquariumContext";
 import { useAquariumUi } from "../../context/AquariumUiContext";
+
+function SceneLoadingFallback() {
+  const { progress } = useProgress();
+
+  return (
+    <Html center>
+      <div
+        style={{
+          padding: "8px 12px",
+          borderRadius: "999px",
+          border: "2px solid rgba(255,255,255,0.9)",
+          background: "rgba(36, 85, 150, 0.75)",
+          color: "#fff",
+          fontSize: "12px",
+          fontWeight: 700,
+          letterSpacing: "0.3px",
+          whiteSpace: "nowrap",
+        }}
+      >
+        Loading aquarium assets... {Math.round(progress)}%
+      </div>
+    </Html>
+  );
+}
 
 function ResponsiveCamera() {
   const { camera } = useThree();
@@ -60,22 +90,59 @@ export default function AquariumScene() {
     return () => window.removeEventListener("toggle-substrate", handleToggle);
   }, []);
 
+  useEffect(() => {
+    void preloadDecorationAssets();
+  }, []);
+
   return (
     <Canvas shadows camera={{ position: [0, 0.25, 8], fov: 35 }}>
       <ResponsiveCamera />
-      <Suspense fallback={null}>
-        <Lighting mode={aquarium.lightMode} />
-        <BubbleStream />
-        <BackgroundFishLayer fish={aquarium.backgroundFish} />
+      <Lighting mode={aquarium.lightMode} />
+      <BubbleStream />
 
-        {/* Detailed Comment: Conditionally renders the ground layout geometry based on overlay toggle triggers */}
-        {renderFloor && <Substrate type={aquarium.substrate} />}
+      {/* Detailed Comment: Conditionally renders the ground layout geometry based on overlay toggle triggers */}
+      {renderFloor && <Substrate type={aquarium.substrate} />}
 
-        <Foliage
-          visible={aquarium.showGrass}
-          type={ui.foliageStyle}
-          count={14}
+      <Foliage visible={aquarium.showGrass} type={ui.foliageStyle} count={14} />
+
+      <AxolotlController
+        isPetting={ui.isPetting}
+        setIsPetting={ui.setIsPetting}
+        isFeeding={aquarium.foods.length > 0 || aquarium.treats.length > 0}
+        snackCount={aquarium.snackCount}
+        colorPalette={aquarium.currentColor}
+        mood={aquarium.mood}
+        trick={ui.trick}
+        currentAccessory={aquarium.currentAccessory}
+        onTrickComplete={() => ui.setTrick("none")}
+      />
+
+      {aquarium.foods.map((food) => (
+        <Food
+          key={food.id}
+          id={food.id}
+          spawnX={food.spawnX}
+          spawnY={food.spawnY}
+          spawnZ={food.spawnZ}
+          onConsumed={aquarium.consumeFood}
+          onMissed={aquarium.missFood}
         />
+      ))}
+
+      {aquarium.treats.map((treat) => (
+        <Treat
+          key={treat.id}
+          id={treat.id}
+          spawnX={treat.spawnX}
+          spawnY={treat.spawnY}
+          spawnZ={treat.spawnZ}
+          onConsumed={aquarium.consumeTreat}
+          onMissed={aquarium.missTreat}
+        />
+      ))}
+
+      <Suspense fallback={<SceneLoadingFallback />}>
+        <BackgroundFishLayer fish={aquarium.backgroundFish} />
 
         <DecorationLayer
           items={aquarium.decorations}
@@ -84,50 +151,15 @@ export default function AquariumScene() {
           onRemoveDecoration={aquarium.removeDecoration}
         />
 
-        <AxolotlController
-          isPetting={ui.isPetting}
-          setIsPetting={ui.setIsPetting}
-          isFeeding={aquarium.foods.length > 0 || aquarium.treats.length > 0}
-          snackCount={aquarium.snackCount}
-          colorPalette={aquarium.currentColor}
-          mood={aquarium.mood}
-          trick={ui.trick}
-          currentAccessory={aquarium.currentAccessory}
-          onTrickComplete={() => ui.setTrick("none")}
-        />
-
-        {aquarium.foods.map((food) => (
-          <Food
-            key={food.id}
-            id={food.id}
-            spawnX={food.spawnX}
-            spawnY={food.spawnY}
-            spawnZ={food.spawnZ}
-            onConsumed={aquarium.consumeFood}
-            onMissed={aquarium.missFood}
-          />
-        ))}
-
-        {aquarium.treats.map((treat) => (
-          <Treat
-            key={treat.id}
-            id={treat.id}
-            spawnX={treat.spawnX}
-            spawnY={treat.spawnY}
-            spawnZ={treat.spawnZ}
-            onConsumed={aquarium.consumeTreat}
-            onMissed={aquarium.missTreat}
-          />
-        ))}
-
         <Environment preset="sunset" />
-        <ContactShadows
-          position={[0, -2.45, 0]}
-          opacity={0.26}
-          scale={14}
-          blur={2.8}
-        />
       </Suspense>
+
+      <ContactShadows
+        position={[0, -2.45, 0]}
+        opacity={0.26}
+        scale={14}
+        blur={2.8}
+      />
     </Canvas>
   );
 }

@@ -13,47 +13,47 @@ export const AQUARIUM_BACKGROUNDS: BackgroundOption[] = [
   {
     id: "andromedagalaxy",
     name: "Andromeda",
-    url: "/backgroundTextures/andromedagalaxy.jpg",
+    url: "/backgroundTextures/andromedagalaxy.webp",
   },
   {
     id: "bridge",
     name: "Bridge",
-    url: "/backgroundTextures/bridge.jpg",
+    url: "/backgroundTextures/bridge.webp",
   },
   {
     id: "candy",
     name: "Candy",
-    url: "/backgroundTextures/candy.jpg",
+    url: "/backgroundTextures/candy.webp",
   },
   {
     id: "canyon",
     name: "Canyon",
-    url: "/backgroundTextures/canyon.jpg",
+    url: "/backgroundTextures/canyon.webp",
   },
   {
     id: "city",
     name: "City",
-    url: "/backgroundTextures/city.jpg",
+    url: "/backgroundTextures/city.webp",
   },
   {
     id: "fallriver",
     name: "Fall River",
-    url: "/backgroundTextures/fallriver.jpg",
+    url: "/backgroundTextures/fallriver.webp",
   },
   {
     id: "purplestardust",
     name: "Purple Stardust",
-    url: "/backgroundTextures/purplestardust.jpg",
+    url: "/backgroundTextures/purplestardust.webp",
   },
   {
     id: "space",
     name: "Space",
-    url: "/backgroundTextures/space.jpg",
+    url: "/backgroundTextures/space.webp",
   },
   {
     id: "sunflowers",
     name: "Sunflowers",
-    url: "/backgroundTextures/sunflowers.jpg",
+    url: "/backgroundTextures/sunflowers.webp",
   },
 ];
 

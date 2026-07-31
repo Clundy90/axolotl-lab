@@ -1,7 +1,5 @@
 import React, { useMemo } from "react";
-import { useLoader } from "@react-three/fiber";
-import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
+import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { DecorationType } from "../../../state/aquarium";
 
@@ -18,27 +16,12 @@ const ASSET_ROOTS: Record<DecorationType, string> = {
   seaUrchin: "/urchin",
 };
 
-const MODEL_FILES: Record<DecorationType, { obj: string; mtl: string }> = {
-  castle: {
-    obj: "castle.obj",
-    mtl: "castle.mtl",
-  },
-  log: {
-    obj: "log.obj",
-    mtl: "log.mtl",
-  },
-  treasureChest: {
-    obj: "treasure.obj",
-    mtl: "treasure.mtl",
-  },
-  brainCoral: {
-    obj: "coral.obj",
-    mtl: "coral.mtl",
-  },
-  seaUrchin: {
-    obj: "urchin.obj",
-    mtl: "urchin.mtl",
-  },
+const MODEL_FILES: Record<DecorationType, { glb: string }> = {
+  castle: { glb: "castle.draco.glb" },
+  log: { glb: "log.draco.glb" },
+  treasureChest: { glb: "treasure.draco.glb" },
+  brainCoral: { glb: "coral.draco.glb" },
+  seaUrchin: { glb: "urchin.draco.glb" },
 };
 
 const MODEL_HEIGHTS: Record<DecorationType, number> = {
@@ -56,6 +39,36 @@ const MODEL_ROTATIONS: Record<DecorationType, [number, number, number]> = {
   brainCoral: [0, 0, 0],
   seaUrchin: [0, 0, 0],
 };
+
+let preloadDecorationAssetsPromise: Promise<void> | null = null;
+let gltfDecoderConfigured = false;
+
+function configureDracoDecoder() {
+  if (gltfDecoderConfigured) {
+    return;
+  }
+
+  useGLTF.setDecoderPath("/draco/");
+  gltfDecoderConfigured = true;
+}
+
+export function preloadDecorationAssets() {
+  if (preloadDecorationAssetsPromise) {
+    return preloadDecorationAssetsPromise;
+  }
+
+  configureDracoDecoder();
+
+  preloadDecorationAssetsPromise = Promise.resolve().then(() => {
+    (Object.keys(MODEL_FILES) as DecorationType[]).forEach((type) => {
+      const root = ASSET_ROOTS[type];
+      const files = MODEL_FILES[type];
+      useGLTF.preload(`${root}/${files.glb}`);
+    });
+  });
+
+  return preloadDecorationAssetsPromise;
+}
 
 function normalizeModel(object: THREE.Group, targetHeight: number) {
   const box = new THREE.Box3().setFromObject(object);
@@ -76,19 +89,14 @@ function normalizeModel(object: THREE.Group, targetHeight: number) {
 }
 
 export default function DecorationModel({ type }: { type: DecorationType }) {
+  configureDracoDecoder();
+
   const root = ASSET_ROOTS[type];
   const files = MODEL_FILES[type];
-  const materials = useLoader(MTLLoader, `${root}/${files.mtl}`, (loader) => {
-    loader.setResourcePath(`${root}/`);
-  });
-  materials.preload();
-
-  const source = useLoader(OBJLoader, `${root}/${files.obj}`, (loader) => {
-    loader.setMaterials(materials);
-  });
+  const source = useGLTF(`${root}/${files.glb}`);
 
   const object = useMemo(
-    () => normalizeModel(source.clone(), MODEL_HEIGHTS[type]),
+    () => normalizeModel(source.scene.clone(), MODEL_HEIGHTS[type]),
     [source, type],
   );
 

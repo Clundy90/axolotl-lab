@@ -313,7 +313,7 @@ const globalStyles = `
       bottom: max(12px, env(safe-area-inset-bottom));
       transform: translateX(-50%);
       width: min(calc(100vw - 18px), 380px);
-      max-height: calc(100dvh - 22px);
+      max-height: min(50dvh, 420px);
       overflow: hidden;
       flex-direction: column;
       gap: 8px;
@@ -365,6 +365,8 @@ const globalStyles = `
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 6px;
+      max-height: 32dvh;
+      overflow-y: auto;
     }
     .mobile-quick-action {
       width: 100%;
@@ -711,6 +713,13 @@ function AquariumUiOverlay() {
               onClick={() => aquarium.addDecoration?.("brainCoral")}
             >
               Brain Coral
+            </button>
+            <button
+              className="pill-btn"
+              style={pillBtn(COLORS.moods)}
+              onClick={() => aquarium.addDecoration?.("seaUrchin")}
+            >
+              🟣 Sea Urchin
             </button>
             <button
               className="pill-btn"
@@ -1088,7 +1097,7 @@ function AquariumUiOverlay() {
               <div className="mobile-menu-header">
                 <div>
                   <p className="mobile-menu-kicker">Mobile quick menu</p>
-                  <h3 className="mobile-menu-title">Feed, pet, spin</h3>
+                  <h3 className="mobile-menu-title">Feed, toot, day/night</h3>
                 </div>
                 <button
                   type="button"
@@ -1110,10 +1119,10 @@ function AquariumUiOverlay() {
                 </button>
                 <button
                   className="pill-btn mobile-quick-action primary"
-                  style={pillBtn(COLORS.pink)}
-                  onClick={() => ui.petAxolotl?.()}
+                  style={pillBtn(COLORS.teal)}
+                  onClick={() => aquarium.handleDropTreat?.()}
                 >
-                  👋 Pet
+                  🍬 Treat
                 </button>
                 <button
                   className="pill-btn mobile-quick-action primary"
@@ -1122,6 +1131,33 @@ function AquariumUiOverlay() {
                   onClick={() => ui.setTrick?.("spin")}
                 >
                   💫 Spin
+                </button>
+                <button
+                  className="pill-btn mobile-quick-action primary"
+                  style={pillBtn(COLORS.purple)}
+                  disabled={ui.trick !== "none"}
+                  onClick={() => ui.setTrick?.("toot")}
+                >
+                  🎵 Toot
+                </button>
+                <button
+                  className="pill-btn mobile-quick-action primary"
+                  style={pillBtn(COLORS.blue)}
+                  onClick={() =>
+                    aquarium.setLightMode?.(
+                      aquarium.lightMode === "day" ? "night" : "day",
+                    )
+                  }
+                >
+                  {aquarium.lightMode === "night" ? "🌙 Night" : "☀️ Day"}
+                </button>
+                <button
+                  className="pill-btn mobile-quick-action primary"
+                  style={pillBtn(COLORS.orange)}
+                  disabled={ui.trick !== "none"}
+                  onClick={() => ui.setTrick?.("backflip")}
+                >
+                  🤸 Flip
                 </button>
               </div>
 
